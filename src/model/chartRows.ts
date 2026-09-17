@@ -43,20 +43,27 @@ export function toChartRows(projection: Projection): ChartRow[] {
 /**
  * Colour slots are handed out across pensions and assets together, so an asset
  * keeps one identity in both panels and never shares a hue with a pension.
- * Disabled entries keep their slot: colour follows the entity, not its rank.
+ * Disabled entries keep their slot: colour follows the entity, not its rank —
+ * used both by the charts (only enabled entries) and by the input cards (every
+ * entry, so a disabled one still shows the swatch it would get if re-enabled).
  */
-export function buildSeries(plan: Plan): { assets: ChartSeries[]; income: ChartSeries[] } {
-  const pensionColor = new Map(plan.pensions.map((p, index) => [p.id, seriesColor(index)]))
-  const assetColor = new Map(
-    plan.assets.map((a, index) => [a.id, seriesColor(plan.pensions.length + index)]),
-  )
+export function pensionColor(plan: Plan, id: string): string {
+  const index = plan.pensions.findIndex((pension) => pension.id === id)
+  return seriesColor(index)
+}
 
+export function assetColor(plan: Plan, id: string): string {
+  const index = plan.assets.findIndex((asset) => asset.id === id)
+  return seriesColor(plan.pensions.length + index)
+}
+
+export function buildSeries(plan: Plan): { assets: ChartSeries[]; income: ChartSeries[] } {
   const pensions = plan.pensions
     .filter((pension) => pension.enabled)
     .map((pension) => ({
       key: pensionKey(pension.id),
       name: pension.name,
-      color: pensionColor.get(pension.id) ?? seriesColor(0),
+      color: pensionColor(plan, pension.id),
     }))
 
   const withdrawals = plan.assets
@@ -64,7 +71,7 @@ export function buildSeries(plan: Plan): { assets: ChartSeries[]; income: ChartS
     .map((asset) => ({
       key: withdrawalKey(asset.id),
       name: de.withdrawalOf(asset.name),
-      color: assetColor.get(asset.id) ?? seriesColor(0),
+      color: assetColor(plan, asset.id),
     }))
 
   const assets = plan.assets
@@ -72,7 +79,7 @@ export function buildSeries(plan: Plan): { assets: ChartSeries[]; income: ChartS
     .map((asset) => ({
       key: assetValueKey(asset.id),
       name: asset.name,
-      color: assetColor.get(asset.id) ?? seriesColor(0),
+      color: assetColor(plan, asset.id),
     }))
 
   // Pensions sit at the bottom of the income stack: they are the part that

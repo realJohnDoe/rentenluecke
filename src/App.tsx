@@ -1,9 +1,13 @@
-import { useMemo } from 'react'
+import { useMemo, useReducer } from 'react'
 import { Charts } from './components/Charts'
 import { Summary } from './components/Summary'
+import { PlanForm } from './components/PlanForm'
+import { PensionList } from './components/PensionList'
+import { AssetList } from './components/AssetList'
 import { defaultPlan } from './model/defaultPlan'
 import { buildSeries, toChartRows } from './model/chartRows'
 import { project, resolveTimeline } from './model/finance'
+import { planReducer } from './state/planReducer'
 import type { Scenario, ValueMode } from './model/types'
 import { de } from './i18n/de'
 import { chartInk } from './theme'
@@ -14,7 +18,7 @@ const SCENARIO: Scenario = 'continue'
 const VALUE_MODE: ValueMode = 'real'
 
 export function App() {
-  const plan = defaultPlan
+  const [plan, dispatch] = useReducer(planReducer, defaultPlan)
 
   const { rows, series, summary, timeline } = useMemo(() => {
     const projection = project(plan, SCENARIO, VALUE_MODE)
@@ -27,7 +31,7 @@ export function App() {
   }, [plan])
 
   return (
-    <div className="mx-auto flex max-w-5xl flex-col gap-3 px-4 py-6">
+    <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-6">
       <header>
         <h1 className="text-xl font-semibold">{de.appTitle}</h1>
         <p className="text-sm" style={{ color: chartInk.secondary }}>
@@ -38,14 +42,23 @@ export function App() {
         </p>
       </header>
 
-      <Summary summary={summary} />
+      <div className="grid gap-3 lg:grid-cols-[minmax(0,360px)_1fr] lg:items-start">
+        <div className="flex flex-col gap-3">
+          <PlanForm plan={plan} dispatch={dispatch} />
+          <PensionList plan={plan} dispatch={dispatch} />
+          <AssetList plan={plan} dispatch={dispatch} />
+        </div>
 
-      <Charts
-        rows={rows}
-        assetSeries={series.assets}
-        incomeSeries={series.income}
-        timeline={timeline}
-      />
+        <div className="flex flex-col gap-3">
+          <Summary summary={summary} />
+          <Charts
+            rows={rows}
+            assetSeries={series.assets}
+            incomeSeries={series.income}
+            timeline={timeline}
+          />
+        </div>
+      </div>
 
       <footer className="text-xs" style={{ color: chartInk.muted }}>
         {de.disclaimer}

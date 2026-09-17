@@ -142,27 +142,27 @@ Make the plan editable. Nothing about the maths or the charts changes.
 
 ### Tasks
 
-- [ ] **`src/state/planReducer.ts`** — a `useReducer` reducer over `Plan` with
+- [x] **`src/state/planReducer.ts`** — a `useReducer` reducer over `Plan` with
   immutable updates. Actions: `setField` (the scalar plan fields), `addPension`,
   `updatePension`, `removePension`, `addAsset`, `updateAsset`, `removeAsset`,
   `replacePlan` (needed by PR 4's import). Generate ids with
   `crypto.randomUUID()`. Keep the reducer pure and unit-test it.
-- [ ] **`src/components/NumberField.tsx`** — one reusable labelled control used by
+- [x] **`src/components/NumberField.tsx`** — one reusable labelled control used by
   everything else: `label`, `value`, `onChange`, and optional `min`, `max`,
   `step`, `suffix` (`€`, `%`, `Jahre`), `hint`, and `slider` (renders a range
   input bound to the same value beneath the number input). Two rules that matter:
   keep the raw string in local state while the field has focus so a half-typed
   value like `"1,"` does not get clobbered, and accept both `.` and `,` as the
   decimal separator.
-- [ ] **`src/components/PlanForm.tsx`** — `currentAge`, `retirementAge`, `endAge`
+- [x] **`src/components/PlanForm.tsx`** — `currentAge`, `retirementAge`, `endAge`
   (sliders, whole years), `targetMonthlyIncome` (€), `inflationRate` (%). Percent
   fields show `2` and store `0.02`.
-- [ ] **`src/components/PensionList.tsx`** and **`src/components/AssetList.tsx`** —
+- [x] **`src/components/PensionList.tsx`** and **`src/components/AssetList.tsx`** —
   a card per entry with its fields, an enable checkbox, a name input, a remove
   button, and an "add" button below the list. Show the entry's colour swatch
   (`seriesColor` through `buildSeries`) on the card so the link to the chart is
   obvious. Empty state: one line of text plus the add button.
-- [ ] **`src/App.tsx`** — hold the plan in the reducer, pass `state` and `dispatch`
+- [x] **`src/App.tsx`** — hold the plan in the reducer, pass `state` and `dispatch`
   down, keep the projection in a `useMemo` keyed on the plan. Two-column layout on
   `lg:` (inputs left, charts right), stacked below.
 
