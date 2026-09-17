@@ -3,7 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <!-- Paints the mobile browser chrome in the page's own background colour,
+         so the address bar does not sit on a differently coloured strip. The
+         two values mirror `--plane` in src/index.css. -->
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f9f9f7" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0d0d0d" />
     <title>Rentenlücken-Rechner</title>
     <meta
       name="description"

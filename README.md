@@ -22,9 +22,9 @@ Planungsende auf null abgebaut (Annuität), und die Wunschrente wird optional mi
 der Inflation hochgerechnet. Zwei Szenarien lassen sich vergleichen — Beiträge
 bis zum Rentenbeginn fortführen oder ab heute beitragsfrei stellen — und Beträge
 wahlweise in heutiger Kaufkraft oder nominal anzeigen. Der Plan lässt sich als
-YAML exportieren und wieder importieren und wird nebenbei im Browser
-zwischengespeichert. Modellrechnung ohne Steuern, Kranken- und
-Pflegeversicherung. Keine Anlageberatung.
+YAML exportieren, wieder importieren und auf den Beispielplan zurücksetzen; er
+wird nebenbei im Browser zwischengespeichert. Modellrechnung ohne Steuern,
+Kranken- und Pflegeversicherung. Keine Anlageberatung.
 
 ## Entwicklung
 
@@ -33,6 +33,7 @@ npm install
 npm run dev        # Entwicklungsserver
 npm test           # Tests der Finanzmathematik
 npm run typecheck
+npm run format     # Prettier über den Quellcode (`format:check` in CI)
 npm run build      # statischer Build nach dist/
 ```
 
@@ -43,8 +44,9 @@ npm run build      # statischer Build nach dist/
 | `src/model/` | Datenmodell und Finanzmathematik — reine Funktionen, ohne React |
 | `src/components/` | Diagramme und UI |
 | `src/components/ui/` | Bausteine ohne Fachlogik: `Card`, `Button`, `IconButton` |
-| `src/hooks/` | geteilter Zustand: aufgeklappte Einträge, Media Queries |
+| `src/hooks/` | geteilter Zustand: aufgeklappte Einträge, Media Queries, Fokus nach dem Hinzufügen |
 | `src/index.css` | Farbtoken für hell und dunkel, als Tailwind-Utilities |
+| `.prettierrc.json` | verbindlicher Codestil; `npm run format:check` läuft in CI |
 | `src/i18n/de.ts` | sämtliche deutschen Texte |
 | `plan.md` | Umsetzungsplan für die noch offenen Ausbaustufen |
 
@@ -53,6 +55,7 @@ deutsch.
 
 ## Deployment
 
-`.github/workflows/deploy.yml` prüft jeden Push und Pull Request (Typecheck,
-Tests, Build) und veröffentlicht `main` auf GitHub Pages. Einmalig nötig:
+`.github/workflows/deploy.yml` prüft jeden Push und Pull Request (Format,
+Typecheck, Tests, Build) und veröffentlicht `main` auf GitHub Pages. Einmalig
+nötig:
 Repository → Settings → Pages → Source auf **GitHub Actions** stellen.

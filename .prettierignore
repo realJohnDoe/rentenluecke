@@ -1,0 +1,5 @@
+dist
+package-lock.json
+# Prose. Prettier rewrites Markdown emphasis and table padding, which makes a
+# one-line content change look like a rewrite of the whole file.
+*.md

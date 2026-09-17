@@ -1,3 +1,4 @@
+import { useId } from 'react'
 import type { ReactNode } from 'react'
 import { IconButton } from './ui/IconButton'
 import { de } from '../i18n/de'
@@ -40,8 +41,16 @@ export function EntryCard({
   summary,
   children,
 }: Props) {
+  const detailsId = useId()
+
   return (
-    <li className="rounded-lg border border-hairline">
+    /*
+     * `@container`: the field grid below pairs up on the card's own width, not
+     * the viewport's. On a wide screen this card sits in a 22rem sidebar, where
+     * a viewport-driven `sm:grid-cols-2` gave two 136px columns and wrapped
+     * every hint over six lines.
+     */
+    <li className="@container rounded-lg border border-hairline">
       <div className="flex items-center gap-2 p-2 pl-3">
         <span
           aria-hidden
@@ -68,14 +77,17 @@ export function EntryCard({
           onClick={onToggle}
           label={expanded ? de.collapseEntry : de.expandEntry}
           expanded={expanded}
+          /* Only while the region exists — `aria-controls` pointing at an id
+             that is not in the document is worse than leaving it off. */
+          controls={expanded ? detailsId : undefined}
         >
           <ChevronIcon expanded={expanded} />
         </IconButton>
       </div>
 
       {expanded ? (
-        <div className="border-t border-hairline px-3 pb-3 pt-3">
-          <div className="grid gap-3 sm:grid-cols-2">{children}</div>
+        <div id={detailsId} className="border-t border-hairline px-3 pb-3 pt-3">
+          <div className="grid gap-3 @md:grid-cols-2">{children}</div>
           <div className="mt-2 flex justify-end">
             <IconButton onClick={onRemove} label={de.removeEntry} tone="critical">
               <TrashIcon />

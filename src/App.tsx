@@ -5,6 +5,7 @@ import { PlanForm } from './components/PlanForm'
 import { PensionList } from './components/PensionList'
 import { AssetList } from './components/AssetList'
 import { ViewOptions } from './components/ViewOptions'
+import { GapBar } from './components/GapBar'
 import { PlanIo } from './components/PlanIo'
 import { defaultPlan } from './model/defaultPlan'
 import { buildSeries, toChartRows } from './model/chartRows'
@@ -50,10 +51,7 @@ export function App() {
 
   // Both scenarios are always projected, keyed only on what actually changes
   // their result, so flipping the active scenario never recomputes either one.
-  const continueProjection = useMemo(
-    () => project(plan, 'continue', valueMode),
-    [plan, valueMode],
-  )
+  const continueProjection = useMemo(() => project(plan, 'continue', valueMode), [plan, valueMode])
   const stopProjection = useMemo(() => project(plan, 'stop', valueMode), [plan, valueMode])
 
   const projection = scenario === 'continue' ? continueProjection : stopProjection
@@ -74,42 +72,45 @@ export function App() {
         <p className="mt-1 text-sm text-ink-secondary">{de.appSubtitle}</p>
       </header>
 
-      {/*
-       * Results first, inputs second — in the DOM, and so on a phone, where the
-       * page is one column. The input cards are well over a screenful, and with
-       * them on top every edit meant a long scroll to see what it changed.
-       * From `lg` the two are side by side and the order stops mattering, so
-       * the inputs are placed back into the left column explicitly.
-       */}
-      <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)]">
-        <div className="flex min-w-0 flex-col gap-4 lg:col-start-2 lg:row-start-1">
-          <ViewOptions
-            scenario={scenario}
-            onScenarioChange={setScenario}
-            valueMode={valueMode}
-            onValueModeChange={setValueMode}
-          />
-          <Summary
-            summary={projection.summary}
-            ghostSummary={ghostProjection.summary}
-            ghostScenarioName={de.scenarioName(ghostScenario)}
-          />
-          <Charts
-            rows={rows}
-            assetSeries={series.assets}
-            incomeSeries={series.income}
-            timeline={timeline}
-            valueMode={valueMode}
-            ghostScenarioName={de.scenarioName(ghostScenario)}
-          />
-        </div>
+      <main className="flex flex-col gap-4">
+        {/*
+         * Results first, inputs second — in the DOM, and so on a phone, where the
+         * page is one column. The input cards are well over a screenful, and with
+         * them on top every edit meant a long scroll to see what it changed.
+         * From `lg` the two are side by side and the order stops mattering, so
+         * the inputs are placed back into the left column explicitly.
+         */}
+        <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)]">
+          <div className="flex min-w-0 flex-col gap-4 lg:col-start-2 lg:row-start-1">
+            <ViewOptions
+              scenario={scenario}
+              onScenarioChange={setScenario}
+              valueMode={valueMode}
+              onValueModeChange={setValueMode}
+            />
+            <Summary
+              summary={projection.summary}
+              ghostSummary={ghostProjection.summary}
+              ghostScenarioName={de.scenarioName(ghostScenario)}
+            />
+            <Charts
+              rows={rows}
+              assetSeries={series.assets}
+              incomeSeries={series.income}
+              timeline={timeline}
+              valueMode={valueMode}
+              ghostScenarioName={de.scenarioName(ghostScenario)}
+            />
+          </div>
 
-        <div className="flex min-w-0 flex-col gap-4 lg:col-start-1 lg:row-start-1">
-          <PlanForm plan={plan} dispatch={dispatch} />
-          <PensionList plan={plan} dispatch={dispatch} />
-          <AssetList plan={plan} dispatch={dispatch} />
+          <div className="flex min-w-0 flex-col gap-4 lg:col-start-1 lg:row-start-1">
+            <GapBar summary={projection.summary} />
+            <PlanForm plan={plan} dispatch={dispatch} />
+            <PensionList plan={plan} dispatch={dispatch} />
+            <AssetList plan={plan} dispatch={dispatch} />
+          </div>
         </div>
-      </div>
+      </main>
 
       <footer className="mt-2 flex flex-col gap-3 border-t border-hairline pt-4">
         <PlanIo plan={plan} dispatch={dispatch} />

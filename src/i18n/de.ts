@@ -7,14 +7,43 @@ import type { PlanIssue } from '../model/schema'
  */
 export const de = {
   appTitle: 'Rentenlücken-Rechner',
-  appSubtitle:
-    'Was bleibt im Monat übrig — und was fehlt zur Wunschrente?',
+  appSubtitle: 'Was bleibt im Monat übrig — und was fehlt zur Wunschrente?',
 
   // Chart panels
   assetsPanelTitle: 'Vermögen',
   assetsPanelHint: 'Aufbau bis zum Rentenbeginn, danach Entnahme bis zum Planungsende',
   incomePanelTitle: 'Monatliche Versorgung',
   incomePanelHint: 'Lebenslange Renten und Entnahmen aus dem Vermögen',
+  /** Names the empty stretch of the income panel left of the retirement marker. */
+  accumulationPhase: 'Ansparphase',
+
+  /*
+   * Spoken descriptions of the two chart panels. An SVG chart is silent to a
+   * screen reader, so each panel carries one of these as visually hidden text —
+   * the same few numbers a sighted reader takes from the shape of the curve.
+   */
+  assetsChartDescription: (d: {
+    startValue: string
+    startAge: string
+    retirementValue: string
+    retirementAge: string
+    endValue: string
+    endAge: string
+  }) =>
+    `Flächendiagramm: Das Vermögen wächst von ${d.startValue} im Alter ${d.startAge} auf ` +
+    `${d.retirementValue} bei Rentenbeginn mit ${d.retirementAge} und wird bis zum Alter ` +
+    `${d.endAge} auf ${d.endValue} abgebaut.`,
+  incomeChartDescription: (d: {
+    retirementAge: string
+    retirementIncome: string
+    target: string
+    gap: string
+    endAge: string
+    endIncome: string
+  }) =>
+    `Flächendiagramm: Ab Rentenbeginn mit ${d.retirementAge} stehen ${d.retirementIncome} ` +
+    `pro Monat zur Verfügung, gegenüber einer Wunschrente von ${d.target} — eine Rentenlücke ` +
+    `von ${d.gap}. Im Alter ${d.endAge} sind es ${d.endIncome} pro Monat.`,
 
   // Axes and reference marks
   axisAge: 'Alter',
@@ -37,6 +66,8 @@ export const de = {
 
   // Key figures
   summaryTitle: 'Auf einen Blick',
+  /** Names the muted second figure under each key figure, once for all four. */
+  ghostComparison: (scenarioName: string) => `Zum Vergleich: ${scenarioName}`,
   assetValueAtRetirement: 'Vermögen bei Rentenbeginn',
   incomeAtRetirement: 'Versorgung bei Rentenbeginn',
   gapAtRetirement: 'Rentenlücke bei Rentenbeginn',
@@ -72,6 +103,10 @@ export const de = {
   planIoLabel: 'Plan sichern',
   exportYaml: 'Als YAML exportieren',
   importPlan: 'Plan importieren',
+  resetPlan: 'Zurücksetzen',
+  resetPlanPrompt: 'Alle Eingaben durch den Beispielplan ersetzen?',
+  resetPlanConfirm: 'Ja, zurücksetzen',
+  cancel: 'Abbrechen',
   importErrorTitle: 'Import fehlgeschlagen',
   importError: (issue: PlanIssue) => {
     const field = issue.path || 'Datei'
@@ -95,13 +130,16 @@ export const de = {
   addPension: 'Rente hinzufügen',
   pensionNamePlaceholder: 'Name der Rente',
   monthlyIfStopped: 'Rente bei Beitragsstopp',
-  monthlyIfStoppedHint: 'Heutiger monatlicher Betrag laut Renteninformation, ohne weitere Einzahlungen.',
+  monthlyIfStoppedHint:
+    'Heutiger monatlicher Betrag laut Renteninformation, ohne weitere Einzahlungen.',
   monthlyIfContinued: 'Rente bei Weiterzahlung',
-  monthlyIfContinuedHint: 'Heutiger monatlicher Betrag laut Renteninformation bei Fortführung bis Rentenbeginn.',
+  monthlyIfContinuedHint:
+    'Heutiger monatlicher Betrag laut Renteninformation bei Fortführung bis Rentenbeginn.',
   annualIncrease: 'Jährliche Steigerung',
   annualIncreaseHint: 'Erwartete jährliche Anpassung der Rente.',
   pensionStartAge: 'Rentenbeginn (falls abweichend)',
-  pensionStartAgeHint: 'Nur ausfüllen, wenn diese Rente nicht mit dem allgemeinen Rentenbeginn startet.',
+  pensionStartAgeHint:
+    'Nur ausfüllen, wenn diese Rente nicht mit dem allgemeinen Rentenbeginn startet.',
 
   // Asset list
   assetListTitle: 'Vermögenswerte',
@@ -123,6 +161,5 @@ export const de = {
   expandEntry: 'Details anzeigen',
   collapseEntry: 'Details verbergen',
 
-  disclaimer:
-    'Modellrechnung ohne Steuern, Kranken- und Pflegeversicherung. Keine Anlageberatung.',
+  disclaimer: 'Modellrechnung ohne Steuern, Kranken- und Pflegeversicherung. Keine Anlageberatung.',
 } as const
