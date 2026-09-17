@@ -1,3 +1,4 @@
+import { defaultPlan } from '../model/defaultPlan'
 import type { Asset, Pension, Plan } from '../model/types'
 
 /** The scalar (non-list) fields of `Plan` — all numbers, so `setField` stays simple. */
@@ -17,6 +18,7 @@ export type PlanAction =
   | { type: 'updateAsset'; id: string; patch: Partial<Omit<Asset, 'id'>> }
   | { type: 'removeAsset'; id: string }
   | { type: 'replacePlan'; plan: Plan }
+  | { type: 'resetPlan' }
 
 function newPension(): Pension {
   return {
@@ -81,5 +83,15 @@ export function planReducer(plan: Plan, action: PlanAction): Plan {
 
     case 'replacePlan':
       return action.plan
+
+    case 'resetPlan':
+      // A copy, not the constant itself: every other branch hands back a fresh
+      // object, and sharing `defaultPlan`'s arrays with the live plan would
+      // make any future in-place edit poison the reset target for good.
+      return {
+        ...defaultPlan,
+        pensions: defaultPlan.pensions.map((pension) => ({ ...pension })),
+        assets: defaultPlan.assets.map((asset) => ({ ...asset })),
+      }
   }
 }

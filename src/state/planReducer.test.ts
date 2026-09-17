@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { planReducer } from './planReducer'
+import { defaultPlan } from '../model/defaultPlan'
 import type { Plan } from '../model/types'
 
 const basePlan: Plan = {
@@ -132,5 +133,22 @@ describe('planReducer / replacePlan', () => {
     const other: Plan = { ...basePlan, currentAge: 50, pensions: [], assets: [] }
     const next = planReducer(basePlan, { type: 'replacePlan', plan: other })
     expect(next).toBe(other)
+  })
+})
+
+describe('planReducer / resetPlan', () => {
+  it('returns the example plan, whatever was in the old one', () => {
+    const next = planReducer(basePlan, { type: 'resetPlan' })
+    expect(next).toEqual(defaultPlan)
+  })
+
+  it('does not hand out the shared default object itself', () => {
+    // Every other branch returns a fresh object, and the reducer's callers
+    // mutate nothing — but handing back the module-level constant would make
+    // a future slip corrupt the reset target for the rest of the session.
+    const next = planReducer(basePlan, { type: 'resetPlan' })
+    expect(next).not.toBe(defaultPlan)
+    expect(next.pensions).not.toBe(defaultPlan.pensions)
+    expect(next.assets).not.toBe(defaultPlan.assets)
   })
 })

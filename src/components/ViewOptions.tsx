@@ -17,12 +17,7 @@ type Props = {
  * The scenario control gets the wider share of the row: its two labels are
  * whole sentences, while "Heutige Kaufkraft / Nominal" is a pair of words.
  */
-export function ViewOptions({
-  scenario,
-  onScenarioChange,
-  valueMode,
-  onValueModeChange,
-}: Props) {
+export function ViewOptions({ scenario, onScenarioChange, valueMode, onValueModeChange }: Props) {
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-4">
       <SegmentedControl

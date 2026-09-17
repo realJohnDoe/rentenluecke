@@ -117,9 +117,7 @@ describe('asset accumulation', () => {
 describe('asset withdrawal', () => {
   it('runs the pot down to exactly zero at the planning end', () => {
     const plan = planWith({
-      assets: [
-        asset({ currentValue: 200000, annualReturn: 0.06, annualReturnInRetirement: 0.03 }),
-      ],
+      assets: [asset({ currentValue: 200000, annualReturn: 0.06, annualReturnInRetirement: 0.03 })],
     })
     const { points } = project(plan, 'continue', 'nominal')
     expect(at(points, 360).totalAssetValue).toBe(0)

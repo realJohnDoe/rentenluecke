@@ -4,6 +4,7 @@ import { EntryCard } from './EntryCard'
 import { Card } from './ui/Card'
 import { Button } from './ui/Button'
 import { useExpandedEntries } from '../hooks/useExpandedEntries'
+import { useFocusOnAdd } from '../hooks/useFocusOnAdd'
 import { pensionColor } from '../model/chartRows'
 import type { Pension, Plan } from '../model/types'
 import type { PlanAction } from '../state/planReducer'
@@ -16,6 +17,7 @@ type Props = {
 }
 
 export function PensionList({ plan, dispatch }: Props) {
+  const { listRef, focusAfterAdd } = useFocusOnAdd()
   const { isExpanded, toggle } = useExpandedEntries(plan.pensions.map((pension) => pension.id))
 
   return (
@@ -23,7 +25,7 @@ export function PensionList({ plan, dispatch }: Props) {
       {plan.pensions.length === 0 ? (
         <p className="text-xs text-ink-muted">{de.pensionsEmpty}</p>
       ) : (
-        <ul className="flex flex-col gap-2">
+        <ul ref={listRef} className="flex flex-col gap-2">
           {plan.pensions.map((pension) => (
             <PensionCard
               key={pension.id}
@@ -38,7 +40,14 @@ export function PensionList({ plan, dispatch }: Props) {
         </ul>
       )}
       <div className="mt-3">
-        <Button onClick={() => dispatch({ type: 'addPension' })}>{de.addPension}</Button>
+        <Button
+          onClick={() => {
+            focusAfterAdd()
+            dispatch({ type: 'addPension' })
+          }}
+        >
+          {de.addPension}
+        </Button>
       </div>
     </Card>
   )

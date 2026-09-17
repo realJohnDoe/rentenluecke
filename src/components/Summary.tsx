@@ -12,7 +12,12 @@ type Props = {
 
 export function Summary({ summary, ghostSummary, ghostScenarioName }: Props) {
   return (
-    <Card title={de.summaryTitle}>
+    /*
+     * The comparison scenario is named once, in the card's hint. It used to
+     * prefix all four muted figures, which on a phone spent a third of the
+     * card repeating the same word.
+     */
+    <Card title={de.summaryTitle} hint={de.ghostComparison(ghostScenarioName)}>
       {/*
        * `subgrid` is what keeps the four figures aligned: the labels wrap to
        * two lines at some widths and not others, and without a shared row
@@ -76,15 +81,16 @@ function Figure({
           ${highlight ? 'text-critical' : ''}`}
       >
         {value}
-        {note ? (
-          <span className="ml-1 text-xs font-normal text-ink-muted">{note}</span>
-        ) : null}
+        {note ? <span className="ml-1 text-xs font-normal text-ink-muted">{note}</span> : null}
       </dd>
       {/* A second `dd` rather than a `p`: only `dt` and `dd` are allowed
           inside a `dl`'s grouping `div`, and the ghost figure really is a
-          second description of the same term. */}
+          second description of the same term. The scenario name is visible
+          once in the card hint, so here it is only spoken — without it this
+          figure would be read out as a bare number. */}
       <dd className="mt-0.5 text-xs tabular-nums text-ink-muted">
-        {ghostScenarioName}: {ghostValue}
+        <span className="sr-only">{ghostScenarioName}: </span>
+        {ghostValue}
       </dd>
     </div>
   )

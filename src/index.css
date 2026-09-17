@@ -59,6 +59,11 @@
     --series-7: #9085e9;
     --series-8: #e66767;
 
+    /* The light step (#d03b3b) only reaches 3.5:1 on the dark surface, which
+     * the gap figures — normal-weight text at some sizes — do not pass with.
+     * This step is the same hue lifted to 5.6:1. */
+    --status-critical: #ef5f5f;
+
     --focus: #6aa9f0;
     --control: #e8e7e2;
     --raised: rgba(255, 255, 255, 0.07);
@@ -87,10 +92,20 @@
   body {
     background: var(--plane);
     color: var(--text-primary);
-    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    font-family:
+      system-ui,
+      -apple-system,
+      'Segoe UI',
+      sans-serif;
     /* Stops iOS Safari inflating body text in landscape. */
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
+    /* With `viewport-fit=cover` in index.html the page extends under a
+     * notch or a rounded corner; these keep the content clear of it. They
+     * are 0 on every device that has no such area, so they cost nothing. */
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+    padding-bottom: env(safe-area-inset-bottom);
   }
 
   /*

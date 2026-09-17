@@ -4,6 +4,7 @@ import { EntryCard } from './EntryCard'
 import { Card } from './ui/Card'
 import { Button } from './ui/Button'
 import { useExpandedEntries } from '../hooks/useExpandedEntries'
+import { useFocusOnAdd } from '../hooks/useFocusOnAdd'
 import { assetColor } from '../model/chartRows'
 import type { Asset, Plan } from '../model/types'
 import type { PlanAction } from '../state/planReducer'
@@ -16,6 +17,7 @@ type Props = {
 }
 
 export function AssetList({ plan, dispatch }: Props) {
+  const { listRef, focusAfterAdd } = useFocusOnAdd()
   const { isExpanded, toggle } = useExpandedEntries(plan.assets.map((asset) => asset.id))
 
   return (
@@ -23,7 +25,7 @@ export function AssetList({ plan, dispatch }: Props) {
       {plan.assets.length === 0 ? (
         <p className="text-xs text-ink-muted">{de.assetsEmpty}</p>
       ) : (
-        <ul className="flex flex-col gap-2">
+        <ul ref={listRef} className="flex flex-col gap-2">
           {plan.assets.map((asset) => (
             <AssetCard
               key={asset.id}
@@ -37,7 +39,14 @@ export function AssetList({ plan, dispatch }: Props) {
         </ul>
       )}
       <div className="mt-3">
-        <Button onClick={() => dispatch({ type: 'addAsset' })}>{de.addAsset}</Button>
+        <Button
+          onClick={() => {
+            focusAfterAdd()
+            dispatch({ type: 'addAsset' })
+          }}
+        >
+          {de.addAsset}
+        </Button>
       </div>
     </Card>
   )
