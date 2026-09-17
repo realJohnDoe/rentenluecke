@@ -7,6 +7,15 @@ without further design decisions.
 Read this file together with the conventions below before starting a PR. When you
 finish a PR, tick its checklist here and commit that change with the work.
 
+**Run them in order, one session each.** PR 2 → PR 3 → PR 4. All three touch
+`src/App.tsx`, and PR 3 and PR 4 both touch `src/components/Toolbar.tsx`, so
+starting one before its predecessor has merged buys a conflict for nothing. Begin
+each session from a fresh checkout of `main`.
+
+PR 2 is the largest of the three. If it turns out to be too much for one session,
+split it at the seam between `PlanForm` (the scalar plan fields) and
+`PensionList` + `AssetList` (the entry lists) — they share only the reducer.
+
 ---
 
 ## Conventions that apply to every PR
@@ -35,8 +44,75 @@ identity in both panels even when others are disabled. Never introduce a new
 colour; never cycle slots. Never add a second y-axis to a panel.
 
 **Definition of done for every PR.** `npm run typecheck`, `npm test` and
-`npm run build` all pass, and you have looked at the running page (`npm run dev`)
-at desktop *and* ~390px width, in light and dark mode, before opening the PR.
+`npm run build` all pass, **and** you have seen the page render — see *Seeing the
+page* below. If you could not render it, say so plainly in the PR description
+rather than claiming you looked.
+
+---
+
+## Gotchas in this codebase
+
+These cost turns if you meet them by surprise. None of them are worth "fixing" —
+they are deliberate.
+
+**The TypeScript config is strict.** `tsconfig.app.json` sets
+`noUncheckedIndexedAccess`, `verbatimModuleSyntax`, `erasableSyntaxOnly`,
+`noUnusedLocals` and `noUnusedParameters` on top of `strict`. In practice:
+
+- `rows[i]` has type `T | undefined`. Destructure, use `?? fallback`, or a helper
+  that throws — `finance.test.ts` has `at(points, index)` for exactly this.
+- Types must be imported with `import type { Plan } from './types'`. A plain
+  `import` of a type fails the build.
+- No `enum`, no `namespace`, no constructor parameter properties. Use a union of
+  string literals, as `Scenario` and `ValueMode` do.
+- An unused parameter is an error; prefix it `_` if you genuinely need it.
+
+**Do not loosen these flags to make an error go away.** Fix the code.
+
+**Recharts tooltips.** Recharts types the `content` callback loosely, so
+`Charts.tsx` casts the props (`asTooltipProps`) and looks the row up in `rows` by
+age, instead of reading `payload`. It is deliberate: it avoids fighting the
+library's generics and keeps the tooltip in control of its own formatting. Keep
+that shape when you add series.
+
+**Recharts `dataKey`s are strings, not functions.** The row objects are flattened
+ahead of time by `toChartRows`, with keys built by `assetValueKey(id)` and
+friends. Add new series the same way.
+
+**Tailwind v4 has no config file.** It is wired through `@tailwindcss/vite` in
+`vite.config.ts`, and `src/index.css` is just `@import 'tailwindcss'` plus the
+CSS custom properties for the palette. Do not add `tailwind.config.js`.
+
+**`vite.config.ts` keys `base` on `mode`, not `command`.** With `command`,
+`vite preview` serves at `/` while the built HTML points at `/rentenluecke/` and
+the page comes up blank. Leave it alone.
+
+**Vitest only picks up `src/**/*.test.ts`** (see `test.include`). A `.test.tsx`
+file will not run.
+
+---
+
+## Seeing the page
+
+`npm run dev` serves at `http://localhost:5173/`. `npm run preview` serves the
+production build at `http://localhost:4173/rentenluecke/` — note the subpath.
+
+If your environment has a browser, drive it with Playwright and screenshot at
+1100px and ~390px width, in light and dark (`colorScheme: 'dark'`). In a sandbox
+the bundled Chromium is often not where Playwright looks by default and
+`playwright install` is disabled, so pass the path explicitly:
+
+```js
+const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' })
+const page = await browser.newPage({ viewport: { width: 1100, height: 900 }, colorScheme: 'dark' })
+page.on('pageerror', (e) => console.log('PAGE ERROR', String(e)))
+await page.goto('http://localhost:4173/rentenluecke/', { waitUntil: 'networkidle' })
+await page.screenshot({ path: 'out.png', fullPage: true })
+```
+
+Check that path exists first; adapt if your environment differs. Always listen for
+`pageerror` and `console` errors — a React crash renders as a blank page and is
+otherwise easy to miss.
 
 ---
 
@@ -149,14 +225,26 @@ Make the two view options switchable and show the other scenario as a ghost.
 
 - [ ] `npm install zod yaml` (runtime dependencies).
 - [ ] **`src/model/schema.ts`** — a zod schema mirroring `Plan`, with `version`
-  literal `1`. Export `parsePlan(input: unknown): { ok: true; plan: Plan } | { ok:
-  false; error: string }` where `error` is a **German** message assembled from the
-  zod issues (path + what was expected). Leave a clearly marked spot for future
-  version migrations: switch on `version` before validating.
+  literal `1`. Export
+
+  ```ts
+  type PlanIssue = { path: string; code: 'missing' | 'wrong_type' | 'out_of_range' | 'bad_version' }
+  type ParseResult = { ok: true; plan: Plan } | { ok: false; issues: PlanIssue[] }
+  export function parsePlan(input: unknown): ParseResult
+  ```
+
+  **The model layer stays English** — `parsePlan` returns structured issues, never
+  a display string, and the Toolbar turns them into German via `de.ts` (add
+  `de.importError(issue)`). This is the language rule in the conventions section;
+  do not put German text in `src/model/`. Leave a clearly marked spot for future
+  version migrations: switch on `version` before validating, and map an unknown
+  version to `code: 'bad_version'`.
 - [ ] **`src/model/io.ts`** —
   `serialisePlan(plan, format: 'json' | 'yaml'): string`,
   `deserialisePlan(text: string): ReturnType<typeof parsePlan>` (try JSON first,
-  fall back to YAML; a YAML parse error becomes a German message too),
+  fall back to YAML; a YAML syntax error becomes
+  `{ ok: false, issues: [{ path: '', code: 'wrong_type' }] }`, not a thrown error
+  and not a German string),
   `downloadPlan(plan, format)` (Blob + object URL + synthetic `<a>` click,
   filename `rentenplan-<ISO date>.json|yaml`), and `readPlanFile(file: File)`.
   Keep DOM access in `downloadPlan`/`readPlanFile` only, so the rest is testable.
@@ -171,9 +259,9 @@ Make the two view options switchable and show the other scenario as a ghost.
   the plan only, never the view options.
 - [ ] **Tests** in `src/model/io.test.ts`: a JSON round trip and a YAML round trip
   both return a plan deep-equal to the original; a plan with an unknown extra key
-  still parses; a missing required field yields `ok: false` with a German message;
-  malformed YAML yields `ok: false` rather than throwing; the serialised output
-  contains no `scenario` or `valueMode` key.
+  still parses; a missing required field yields `ok: false` with an issue whose
+  `path` names the field; malformed YAML yields `ok: false` rather than throwing;
+  the serialised output contains no `scenario` or `valueMode` key.
 - [ ] **Polish.** A short `hint` under each input explaining what to enter and in
   which euros (see the money convention). The no-taxes note from `de.disclaimer`
   stays in the footer. Check the ~390px layout: inputs full width, charts still
