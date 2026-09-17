@@ -13,7 +13,6 @@ import { parsePlan } from './model/schema'
 import { planReducer } from './state/planReducer'
 import type { Plan, Scenario, ValueMode } from './model/types'
 import { de } from './i18n/de'
-import { chartInk } from './theme'
 
 const STORAGE_KEY = 'rentenluecke:plan:v1'
 
@@ -69,22 +68,21 @@ export function App() {
   const timeline = useMemo(() => resolveTimeline(plan), [plan])
 
   return (
-    <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-6">
+    <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-6 sm:px-6 sm:py-8">
       <header>
-        <h1 className="text-xl font-semibold">{de.appTitle}</h1>
-        <p className="text-sm" style={{ color: chartInk.secondary }}>
-          {de.appSubtitle}
-        </p>
+        <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">{de.appTitle}</h1>
+        <p className="mt-1 text-sm text-ink-secondary">{de.appSubtitle}</p>
       </header>
 
-      <div className="grid gap-3 lg:grid-cols-[minmax(0,360px)_1fr] lg:items-start">
-        <div className="flex flex-col gap-3">
-          <PlanForm plan={plan} dispatch={dispatch} />
-          <PensionList plan={plan} dispatch={dispatch} />
-          <AssetList plan={plan} dispatch={dispatch} />
-        </div>
-
-        <div className="flex flex-col gap-3">
+      {/*
+       * Results first, inputs second — in the DOM, and so on a phone, where the
+       * page is one column. The input cards are well over a screenful, and with
+       * them on top every edit meant a long scroll to see what it changed.
+       * From `lg` the two are side by side and the order stops mattering, so
+       * the inputs are placed back into the left column explicitly.
+       */}
+      <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)]">
+        <div className="flex min-w-0 flex-col gap-4 lg:col-start-2 lg:row-start-1">
           <ViewOptions
             scenario={scenario}
             onScenarioChange={setScenario}
@@ -105,12 +103,17 @@ export function App() {
             ghostScenarioName={de.scenarioName(ghostScenario)}
           />
         </div>
+
+        <div className="flex min-w-0 flex-col gap-4 lg:col-start-1 lg:row-start-1">
+          <PlanForm plan={plan} dispatch={dispatch} />
+          <PensionList plan={plan} dispatch={dispatch} />
+          <AssetList plan={plan} dispatch={dispatch} />
+        </div>
       </div>
 
-      <PlanIo plan={plan} dispatch={dispatch} />
-
-      <footer className="text-xs" style={{ color: chartInk.muted }}>
-        {de.disclaimer}
+      <footer className="mt-2 flex flex-col gap-3 border-t border-hairline pt-4">
+        <PlanIo plan={plan} dispatch={dispatch} />
+        <p className="text-xs text-ink-muted">{de.disclaimer}</p>
       </footer>
     </div>
   )

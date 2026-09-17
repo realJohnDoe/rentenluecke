@@ -42,6 +42,9 @@ npm run build      # statischer Build nach dist/
 |---|---|
 | `src/model/` | Datenmodell und Finanzmathematik — reine Funktionen, ohne React |
 | `src/components/` | Diagramme und UI |
+| `src/components/ui/` | Bausteine ohne Fachlogik: `Card`, `Button`, `IconButton` |
+| `src/hooks/` | geteilter Zustand: aufgeklappte Einträge, Media Queries |
+| `src/index.css` | Farbtoken für hell und dunkel, als Tailwind-Utilities |
 | `src/i18n/de.ts` | sämtliche deutschen Texte |
 | `plan.md` | Umsetzungsplan für die noch offenen Ausbaustufen |
 

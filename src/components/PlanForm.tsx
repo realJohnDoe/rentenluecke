@@ -1,26 +1,27 @@
 import type { Dispatch } from 'react'
 import { NumberField } from './NumberField'
+import { Card } from './ui/Card'
 import type { Plan } from '../model/types'
 import type { PlanAction, ScalarField } from '../state/planReducer'
 import { de } from '../i18n/de'
-import { chartInk } from '../theme'
 
 type Props = {
   plan: Plan
   dispatch: Dispatch<PlanAction>
 }
 
-/** The scalar plan fields: ages, target income, inflation. */
+/**
+ * The scalar plan fields: ages, target income, inflation. Two columns from the
+ * `sm` breakpoint up — on a phone it is one, and it is long enough that the
+ * results deliberately sit above it on the page.
+ */
 export function PlanForm({ plan, dispatch }: Props) {
-  const setField = (field: ScalarField) => (value: number) => dispatch({ type: 'setField', field, value })
+  const setField = (field: ScalarField) => (value: number) =>
+    dispatch({ type: 'setField', field, value })
 
   return (
-    <section
-      className="rounded-lg border p-3"
-      style={{ background: chartInk.surface, borderColor: 'var(--hairline)' }}
-    >
-      <h2 className="mb-2 text-sm font-semibold">{de.planFormTitle}</h2>
-      <div className="flex flex-col gap-3">
+    <Card title={de.planFormTitle}>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
         <NumberField
           label={de.currentAge}
           value={plan.currentAge}
@@ -65,7 +66,9 @@ export function PlanForm({ plan, dispatch }: Props) {
         <NumberField
           label={de.inflationRate}
           value={plan.inflationRate * 100}
-          onChange={(value) => dispatch({ type: 'setField', field: 'inflationRate', value: value / 100 })}
+          onChange={(value) =>
+            dispatch({ type: 'setField', field: 'inflationRate', value: value / 100 })
+          }
           min={-5}
           max={15}
           step={0.1}
@@ -73,6 +76,6 @@ export function PlanForm({ plan, dispatch }: Props) {
           hint={de.inflationRateHint}
         />
       </div>
-    </section>
+    </Card>
   )
 }

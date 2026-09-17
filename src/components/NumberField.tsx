@@ -1,5 +1,5 @@
 import { useEffect, useId, useState } from 'react'
-import { chartInk } from '../theme'
+import { formatFieldValue } from '../format'
 
 type Props = {
   label: string
@@ -8,7 +8,7 @@ type Props = {
   min?: number
   max?: number
   step?: number
-  /** Unit shown next to the input, e.g. "€", "%", "Jahre". */
+  /** Unit shown inside the input's trailing edge, e.g. "€", "%", "Jahre". */
   suffix?: string
   hint?: string
   /** Also render a range input beneath the number field, bound to the same value. */
@@ -20,6 +20,10 @@ type Props = {
  * displayed text is local state rather than a formatting of `value` — so a
  * half-typed value like "1," is never clobbered by a re-render — and both "."
  * and "," are accepted as the decimal separator.
+ *
+ * The input is 16px on phones on purpose: iOS Safari zooms the whole page in
+ * when a focused field's text is smaller than that, and the page never zooms
+ * back out.
  */
 export function NumberField({
   label,
@@ -33,12 +37,13 @@ export function NumberField({
   slider = false,
 }: Props) {
   const id = useId()
-  const [text, setText] = useState(() => String(value))
+  const hintId = `${id}-hint`
+  const [text, setText] = useState(() => formatFieldValue(value))
   const [focused, setFocused] = useState(false)
 
   // Only follow external changes while the user isn't mid-edit.
   useEffect(() => {
-    if (!focused) setText(String(value))
+    if (!focused) setText(formatFieldValue(value))
   }, [value, focused])
 
   function handleChange(raw: string) {
@@ -48,27 +53,31 @@ export function NumberField({
   }
 
   return (
-    <div className="flex flex-col gap-1">
-      <label htmlFor={id} className="text-xs font-medium" style={{ color: chartInk.secondary }}>
+    <div className="flex flex-col gap-1.5">
+      <label htmlFor={id} className="text-xs font-medium text-ink-secondary">
         {label}
       </label>
-      <div className="flex items-center gap-2">
+      <div className="relative">
         <input
           id={id}
           type="text"
           inputMode="decimal"
-          className="w-full rounded-md border px-2 py-1 text-sm"
-          style={{ borderColor: 'var(--hairline)', background: chartInk.surface }}
+          aria-describedby={hint ? hintId : undefined}
+          className={`h-10 w-full rounded-lg border border-hairline bg-surface px-3
+            text-base tabular-nums sm:text-sm ${suffix ? 'pr-12' : ''}`}
           value={text}
           onFocus={() => setFocused(true)}
           onChange={(event) => handleChange(event.target.value)}
           onBlur={() => {
             setFocused(false)
-            setText(String(value))
+            setText(formatFieldValue(value))
           }}
         />
         {suffix ? (
-          <span className="shrink-0 text-xs" style={{ color: chartInk.muted }}>
+          <span
+            aria-hidden
+            className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-xs text-ink-muted"
+          >
             {suffix}
           </span>
         ) : null}
@@ -80,12 +89,13 @@ export function NumberField({
           max={max}
           step={step}
           value={value}
+          aria-label={label}
           onChange={(event) => onChange(clamp(Number(event.target.value), min, max))}
           className="w-full"
         />
       ) : null}
       {hint ? (
-        <p className="text-xs" style={{ color: chartInk.muted }}>
+        <p id={hintId} className="text-xs leading-snug text-ink-muted">
           {hint}
         </p>
       ) : null}
