@@ -33,15 +33,55 @@ export const de = {
   averageGap: 'Ø Rentenlücke in der Rente',
   perMonth: 'pro Monat',
 
-  // Plan facts shown while the inputs are not editable yet
+  // Plan form
+  planFormTitle: 'Rahmendaten',
   currentAge: 'Aktuelles Alter',
+  currentAgeHint: 'Ihr Alter heute.',
   retirementAge: 'Rentenbeginn (Alter)',
+  retirementAgeHint: 'Alter, ab dem Renten beginnen und Vermögen entnommen wird.',
   endAge: 'Planungsende (Alter)',
+  endAgeHint: 'Alter, bis zu dem das Vermögen reichen soll.',
+  targetMonthlyIncome: 'Wunschrente',
+  targetMonthlyIncomeHint: 'Monatlich gewünschte Versorgung in heutiger Kaufkraft.',
   inflationRate: 'Inflation',
+  inflationRateHint: 'Angenommene jährliche Inflation.',
   scenarioContinue: 'Weiter einzahlen bis Rentenbeginn',
   scenarioStop: 'Beitragsfrei ab heute',
   valueModeReal: 'Heutige Kaufkraft',
   valueModeNominal: 'Nominal',
+  years: 'Jahre',
+
+  // Pension list
+  pensionsTitle: 'Renten',
+  pensionsEmpty: 'Noch keine Rente erfasst.',
+  addPension: 'Rente hinzufügen',
+  pensionNamePlaceholder: 'Name der Rente',
+  monthlyIfStopped: 'Rente bei Beitragsstopp',
+  monthlyIfStoppedHint: 'Heutiger monatlicher Betrag laut Renteninformation, ohne weitere Einzahlungen.',
+  monthlyIfContinued: 'Rente bei Weiterzahlung',
+  monthlyIfContinuedHint: 'Heutiger monatlicher Betrag laut Renteninformation bei Fortführung bis Rentenbeginn.',
+  annualIncrease: 'Jährliche Steigerung',
+  annualIncreaseHint: 'Erwartete jährliche Anpassung der Rente.',
+  pensionStartAge: 'Rentenbeginn (falls abweichend)',
+  pensionStartAgeHint: 'Nur ausfüllen, wenn diese Rente nicht mit dem allgemeinen Rentenbeginn startet.',
+
+  // Asset list
+  assetListTitle: 'Vermögenswerte',
+  assetsEmpty: 'Noch kein Vermögenswert erfasst.',
+  addAsset: 'Vermögenswert hinzufügen',
+  assetNamePlaceholder: 'Name des Vermögenswerts',
+  currentValue: 'Aktueller Wert',
+  currentValueHint: 'Heutiger Wert laut Depot- oder Kontoauszug.',
+  annualReturn: 'Rendite (Ansparphase)',
+  annualReturnHint: 'Erwartete jährliche Rendite bis zum Rentenbeginn.',
+  monthlyContribution: 'Monatliche Sparrate',
+  monthlyContributionHint: 'Monatlicher Beitrag bis zum Rentenbeginn.',
+  annualReturnInRetirement: 'Rendite (Entnahmephase)',
+  annualReturnInRetirementHint: 'Erwartete jährliche Rendite während der Entnahme.',
+
+  // Shared entry-card controls
+  enabled: 'Aktiv',
+  removeEntry: 'Entfernen',
 
   disclaimer:
     'Modellrechnung ohne Steuern, Kranken- und Pflegeversicherung. Keine Anlageberatung.',
