@@ -241,6 +241,40 @@ describe('the gap', () => {
   })
 })
 
+describe('scenario comparison', () => {
+  it('differs from stop only by the withheld asset contributions before retirement', () => {
+    // Zero return keeps the comparison exact: the only difference is the
+    // contributions the "stop" scenario withholds.
+    const plan = planWith({ assets: [asset({ currentValue: 10000, monthlyContribution: 200 })] })
+    const stopped = project(plan, 'stop', 'nominal').points
+    const continued = project(plan, 'continue', 'nominal').points
+    expect(at(continued, 60).totalAssetValue - at(stopped, 60).totalAssetValue).toBeCloseTo(
+      200 * 60,
+      9,
+    )
+  })
+
+  it('differs from stop only by the withheld contributions after retirement too', () => {
+    const plan = planWith({
+      pensions: [pension({ monthlyIfStopped: 800, monthlyIfContinued: 1500 })],
+      assets: [asset({ currentValue: 10000, monthlyContribution: 200 })],
+    })
+    const stopped = project(plan, 'stop', 'nominal').points
+    const continued = project(plan, 'continue', 'nominal').points
+
+    // The withheld 200 €/month over 120 months of accumulation becomes a
+    // 24.000 € gap in the pot, spread evenly over the 240 withdrawal months —
+    // plus the flat gap between the two pension amounts. Every rate here is
+    // zero, so both gaps are exact.
+    const withdrawalGap = (200 * 120) / 240
+    const pensionGap = 1500 - 800
+    expect(at(continued, 120).totalMonthlyIncome - at(stopped, 120).totalMonthlyIncome).toBeCloseTo(
+      withdrawalGap + pensionGap,
+      9,
+    )
+  })
+})
+
 describe('degenerate timelines', () => {
   it('handles retiring at the planning end', () => {
     const plan = planWith({

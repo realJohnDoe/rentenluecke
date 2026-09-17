@@ -9,6 +9,9 @@ export type ChartRow = {
   gap: number
   totalIncome: number
   totalAssetValue: number
+  /** Total for the inactive scenario, drawn as a dashed outline. */
+  ghostAssetValue: number
+  ghostIncome: number
 } & Record<string, number>
 
 /** One stacked band in a chart panel. */
@@ -22,14 +25,22 @@ export const assetValueKey = (id: string) => `assetValue:${id}`
 export const withdrawalKey = (id: string) => `withdrawal:${id}`
 export const pensionKey = (id: string) => `pension:${id}`
 
-export function toChartRows(projection: Projection): ChartRow[] {
-  return projection.points.map((point) => {
+/**
+ * `ghostProjection`, when given, is the inactive scenario's projection — same
+ * plan and value mode, only the contribution behaviour differs, so it always
+ * has exactly as many points as `projection`.
+ */
+export function toChartRows(projection: Projection, ghostProjection?: Projection): ChartRow[] {
+  return projection.points.map((point, index) => {
+    const ghostPoint = ghostProjection?.points[index]
     const row: ChartRow = {
       age: point.age,
       target: point.target,
       gap: point.gap,
       totalIncome: point.totalMonthlyIncome,
       totalAssetValue: point.totalAssetValue,
+      ghostAssetValue: ghostPoint?.totalAssetValue ?? 0,
+      ghostIncome: ghostPoint?.totalMonthlyIncome ?? 0,
     }
     for (const [id, value] of Object.entries(point.assetValues)) row[assetValueKey(id)] = value
     for (const [id, value] of Object.entries(point.withdrawalIncome)) {

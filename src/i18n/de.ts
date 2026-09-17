@@ -1,3 +1,5 @@
+import type { Scenario } from '../model/types'
+
 /**
  * Every German string the UI shows. Code, data format and identifiers stay
  * English; this file is the single place where the app speaks German.
@@ -50,6 +52,13 @@ export const de = {
   valueModeReal: 'Heutige Kaufkraft',
   valueModeNominal: 'Nominal',
   years: 'Jahre',
+
+  // Toolbar
+  scenarioToolbarLabel: 'Szenario',
+  valueModeToolbarLabel: 'Betrachtung',
+  /** Short label for the inactive scenario, used in the ghost legend and Summary. */
+  scenarioName: (scenario: Scenario) => (scenario === 'stop' ? 'Beitragsfrei' : 'Weiterzahlung'),
+  kaufkrafterhalt: 'Kaufkrafterhalt',
 
   // Pension list
   pensionsTitle: 'Renten',
