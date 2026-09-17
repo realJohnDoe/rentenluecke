@@ -22,7 +22,7 @@ Planungsende auf null abgebaut (Annuität), und die Wunschrente wird optional mi
 der Inflation hochgerechnet. Zwei Szenarien lassen sich vergleichen — Beiträge
 bis zum Rentenbeginn fortführen oder ab heute beitragsfrei stellen — und Beträge
 wahlweise in heutiger Kaufkraft oder nominal anzeigen. Der Plan lässt sich als
-JSON oder YAML exportieren und wieder importieren und wird nebenbei im Browser
+YAML exportieren und wieder importieren und wird nebenbei im Browser
 zwischengespeichert. Modellrechnung ohne Steuern, Kranken- und
 Pflegeversicherung. Keine Anlageberatung.
 

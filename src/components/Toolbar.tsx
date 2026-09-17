@@ -71,13 +71,12 @@ export function Toolbar({
             {de.planIoLabel}
           </span>
           <div className="flex flex-wrap gap-2">
-            <ToolbarButton onClick={() => downloadPlan(plan, 'yaml')}>{de.exportYaml}</ToolbarButton>
-            <ToolbarButton onClick={() => downloadPlan(plan, 'json')}>{de.exportJson}</ToolbarButton>
+            <ToolbarButton onClick={() => downloadPlan(plan)}>{de.exportYaml}</ToolbarButton>
             <ToolbarButton onClick={() => fileInputRef.current?.click()}>{de.importPlan}</ToolbarButton>
             <input
               ref={fileInputRef}
               type="file"
-              accept=".json,.yaml,.yml"
+              accept=".yaml,.yml"
               className="hidden"
               onChange={(event) => void handleFileChange(event)}
             />

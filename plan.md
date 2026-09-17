@@ -240,16 +240,20 @@ Make the two view options switchable and show the other scenario as a ghost.
   version migrations: switch on `version` before validating, and map an unknown
   version to `code: 'bad_version'`.
 - [x] **`src/model/io.ts`** —
-  `serialisePlan(plan, format: 'json' | 'yaml'): string`,
-  `deserialisePlan(text: string): ReturnType<typeof parsePlan>` (try JSON first,
-  fall back to YAML; a YAML syntax error becomes
-  `{ ok: false, issues: [{ path: '', code: 'wrong_type' }] }`, not a thrown error
-  and not a German string),
-  `downloadPlan(plan, format)` (Blob + object URL + synthetic `<a>` click,
-  filename `rentenplan-<ISO date>.json|yaml`), and `readPlanFile(file: File)`.
+  `serialisePlan(plan): string`,
+  `deserialisePlan(text: string): ReturnType<typeof parsePlan>` (a YAML syntax
+  error becomes `{ ok: false, issues: [{ path: '', code: 'wrong_type' }] }`, not
+  a thrown error and not a German string),
+  `downloadPlan(plan)` (Blob + object URL + synthetic `<a>` click,
+  filename `rentenplan-<ISO date>.yaml`), and `readPlanFile(file: File)`.
   Keep DOM access in `downloadPlan`/`readPlanFile` only, so the rest is testable.
-- [x] **Export/import UI** in `Toolbar.tsx`: two export buttons (JSON, YAML), one
-  import button opening a hidden `<input type="file" accept=".json,.yaml,.yml">`,
+
+  Deviation from the original spec below: JSON export/import was dropped after
+  PR 4 shipped — one format is enough, and YAML is the nicer one to hand-edit.
+  `deserialisePlan` therefore only parses YAML (which still accepts JSON-shaped
+  text, since JSON is a syntactic subset of YAML).
+- [x] **Export/import UI** in `Toolbar.tsx`: one export button (YAML), one
+  import button opening a hidden `<input type="file" accept=".yaml,.yml">`,
   and an inline error region (`role="alert"`) for a failed import. On success,
   `dispatch({ type: 'replacePlan', plan })`.
 - [x] **localStorage autosave.** Key `rentenluecke:plan:v1`. Load once on mount
@@ -257,11 +261,11 @@ Make the two view options switchable and show the other scenario as a ghost.
   `defaultPlan` is used); save on every plan change, debounced ~300 ms. Wrap both
   reads and writes in try/catch — storage can throw in private windows. Persist
   the plan only, never the view options.
-- [x] **Tests** in `src/model/io.test.ts`: a JSON round trip and a YAML round trip
-  both return a plan deep-equal to the original; a plan with an unknown extra key
-  still parses; a missing required field yields `ok: false` with an issue whose
-  `path` names the field; malformed YAML yields `ok: false` rather than throwing;
-  the serialised output contains no `scenario` or `valueMode` key.
+- [x] **Tests** in `src/model/io.test.ts`: a YAML round trip returns a plan
+  deep-equal to the original; a plan with an unknown extra key still parses; a
+  missing required field yields `ok: false` with an issue whose `path` names the
+  field; malformed YAML yields `ok: false` rather than throwing; the serialised
+  output contains no `scenario` or `valueMode` key.
 - [x] **Polish.** A short `hint` under each input explaining what to enter and in
   which euros (see the money convention). The no-taxes note from `de.disclaimer`
   stays in the footer. Check the ~390px layout: inputs full width, charts still

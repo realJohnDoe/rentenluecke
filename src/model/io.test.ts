@@ -1,17 +1,11 @@
+import { stringify as stringifyYaml } from 'yaml'
 import { describe, expect, it } from 'vitest'
 import { deserialisePlan, serialisePlan } from './io'
 import { defaultPlan } from './defaultPlan'
 
 describe('serialisePlan / deserialisePlan', () => {
-  it('round-trips through JSON', () => {
-    const text = serialisePlan(defaultPlan, 'json')
-    const result = deserialisePlan(text)
-    expect(result.ok).toBe(true)
-    expect(result.ok && result.plan).toEqual(defaultPlan)
-  })
-
   it('round-trips through YAML', () => {
-    const text = serialisePlan(defaultPlan, 'yaml')
+    const text = serialisePlan(defaultPlan)
     const result = deserialisePlan(text)
     expect(result.ok).toBe(true)
     expect(result.ok && result.plan).toEqual(defaultPlan)
@@ -19,14 +13,14 @@ describe('serialisePlan / deserialisePlan', () => {
 
   it('parses a plan that has an unknown extra key', () => {
     const withExtra = { ...defaultPlan, someFutureField: 'ignored' }
-    const result = deserialisePlan(JSON.stringify(withExtra))
+    const result = deserialisePlan(stringifyYaml(withExtra))
     expect(result.ok).toBe(true)
     expect(result.ok && result.plan).toEqual(defaultPlan)
   })
 
   it('reports a missing required field with its path', () => {
     const { currentAge: _currentAge, ...withoutCurrentAge } = defaultPlan
-    const result = deserialisePlan(JSON.stringify(withoutCurrentAge))
+    const result = deserialisePlan(stringifyYaml(withoutCurrentAge))
     expect(result.ok).toBe(false)
     expect(!result.ok && result.issues).toEqual([{ path: 'currentAge', code: 'missing' }])
   })
@@ -38,7 +32,6 @@ describe('serialisePlan / deserialisePlan', () => {
   })
 
   it('serialises neither scenario nor valueMode, which are view options only', () => {
-    expect(serialisePlan(defaultPlan, 'json')).not.toMatch(/scenario|valueMode/i)
-    expect(serialisePlan(defaultPlan, 'yaml')).not.toMatch(/scenario|valueMode/i)
+    expect(serialisePlan(defaultPlan)).not.toMatch(/scenario|valueMode/i)
   })
 })

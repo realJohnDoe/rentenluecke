@@ -3,19 +3,12 @@ import { parsePlan } from './schema'
 import type { ParseResult } from './schema'
 import type { Plan } from './types'
 
-export type PlanFormat = 'json' | 'yaml'
-
-export function serialisePlan(plan: Plan, format: PlanFormat): string {
-  return format === 'json' ? JSON.stringify(plan, null, 2) : stringifyYaml(plan)
+export function serialisePlan(plan: Plan): string {
+  return stringifyYaml(plan)
 }
 
-/** Tries JSON first, then YAML. Never throws — a syntax error in either becomes `ok: false`. */
+/** Never throws — a YAML syntax error becomes `ok: false` instead. */
 export function deserialisePlan(text: string): ParseResult {
-  try {
-    return parsePlan(JSON.parse(text))
-  } catch {
-    // Not JSON — fall through to YAML below.
-  }
   try {
     return parsePlan(parseYaml(text))
   } catch {
@@ -23,18 +16,13 @@ export function deserialisePlan(text: string): ParseResult {
   }
 }
 
-const MIME_TYPES: Record<PlanFormat, string> = {
-  json: 'application/json',
-  yaml: 'application/yaml',
-}
-
 /** Triggers a browser download of the plan. DOM access is confined to this function. */
-export function downloadPlan(plan: Plan, format: PlanFormat): void {
-  const text = serialisePlan(plan, format)
-  const url = URL.createObjectURL(new Blob([text], { type: MIME_TYPES[format] }))
+export function downloadPlan(plan: Plan): void {
+  const text = serialisePlan(plan)
+  const url = URL.createObjectURL(new Blob([text], { type: 'application/yaml' }))
   const link = document.createElement('a')
   link.href = url
-  link.download = `rentenplan-${new Date().toISOString().slice(0, 10)}.${format}`
+  link.download = `rentenplan-${new Date().toISOString().slice(0, 10)}.yaml`
   link.click()
   URL.revokeObjectURL(url)
 }

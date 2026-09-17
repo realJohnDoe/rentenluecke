@@ -64,7 +64,6 @@ export const de = {
   // Export / import
   planIoLabel: 'Plan sichern',
   exportYaml: 'Als YAML exportieren',
-  exportJson: 'Als JSON exportieren',
   importPlan: 'Plan importieren',
   importErrorTitle: 'Import fehlgeschlagen',
   importError: (issue: PlanIssue) => {
