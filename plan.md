@@ -187,25 +187,25 @@ Make the two view options switchable and show the other scenario as a ghost.
 
 ### Tasks
 
-- [ ] **`src/components/Toolbar.tsx`** — two segmented controls: scenario
+- [x] **`src/components/Toolbar.tsx`** — two segmented controls: scenario
   (`de.scenarioStop` / `de.scenarioContinue`) and value mode (`de.valueModeReal` /
   `de.valueModeNominal`). Plain buttons with an `aria-pressed` state. Both live in
   `App.tsx` as `useState`, **not** in the plan.
-- [ ] **Ghost series.** `App.tsx` computes a second projection for the *inactive*
+- [x] **Ghost series.** `App.tsx` computes a second projection for the *inactive*
   scenario and passes its totals into `Charts`. In `toChartRows`, accept an
   optional second projection and write `ghostAssetValue` and `ghostIncome` onto
   each row. In each panel render one extra `<Line>` — `strokeDasharray="5 4"`,
   `strokeWidth={1.5}`, `stroke={chartInk.secondary}`, `dot={false}` — for the
   inactive scenario's total. Add it to the legend, labelled with the inactive
   scenario's name. No fills, no stacking: it is an outline of the total only.
-- [ ] **Target line in nominal mode.** No code change is needed — `project`
+- [x] **Target line in nominal mode.** No code change is needed — `project`
   already grows the target with inflation in nominal mode. Add the German label
   `Kaufkrafterhalt` to the legend when `valueMode === 'nominal'` so the rising
   line is explained.
-- [ ] **Extend `Summary.tsx`** to show, next to each key figure, the same figure
+- [x] **Extend `Summary.tsx`** to show, next to each key figure, the same figure
   for the inactive scenario as a smaller muted line (e.g. "beitragsfrei: 1.240 €"),
   so the cost of stopping is visible without toggling.
-- [ ] Tests: assert that `project(plan, 'stop', …)` and `project(plan, 'continue', …)`
+- [x] Tests: assert that `project(plan, 'stop', …)` and `project(plan, 'continue', …)`
   differ exactly by the contributions, and that the two value modes coincide when
   `inflationRate` is 0. (`finance.test.ts` already covers most of this — extend,
   don't duplicate.)

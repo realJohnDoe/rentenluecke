@@ -12,6 +12,7 @@ import {
 import type { ReactNode } from 'react'
 import type { ChartRow, ChartSeries } from '../model/chartRows'
 import type { Timeline } from '../model/finance'
+import type { ValueMode } from '../model/types'
 import { chartInk } from '../theme'
 import { formatAge, formatEuro, formatEuroAxis } from '../format'
 import { de } from '../i18n/de'
@@ -26,16 +27,41 @@ type Props = {
   assetSeries: ChartSeries[]
   incomeSeries: ChartSeries[]
   timeline: Timeline
+  valueMode: ValueMode
+  /** Name of the inactive scenario, shown on the dashed ghost line. */
+  ghostScenarioName: string
 }
 
-export function Charts({ rows, assetSeries, incomeSeries, timeline }: Props) {
+export function Charts({
+  rows,
+  assetSeries,
+  incomeSeries,
+  timeline,
+  valueMode,
+  ghostScenarioName,
+}: Props) {
   const ticks = ageTicks(timeline)
   const domain: [number, number] = [timeline.currentAge, timeline.endAge]
-  const assetMax = niceMax(Math.max(...rows.map((row) => row.totalAssetValue), 0))
+  const assetMax = niceMax(
+    Math.max(...rows.map((row) => Math.max(row.totalAssetValue, row.ghostAssetValue)), 0),
+  )
   // The income stack is topped off by the gap, so it never rises above the target.
   const incomeMax = niceMax(
-    Math.max(...rows.map((row) => Math.max(row.totalIncome, row.target)), 0),
+    Math.max(...rows.map((row) => Math.max(row.totalIncome, row.target, row.ghostIncome)), 0),
   )
+  const ghostAssetLegend: LegendEntry = {
+    key: 'ghostAssetValue',
+    name: ghostScenarioName,
+    color: chartInk.secondary,
+    kind: 'dashed',
+  }
+  const ghostIncomeLegend: LegendEntry = {
+    key: 'ghostIncome',
+    name: ghostScenarioName,
+    color: chartInk.secondary,
+    kind: 'dashed',
+  }
+  const targetLegendName = valueMode === 'nominal' ? `${de.target} · ${de.kaufkrafterhalt}` : de.target
 
   return (
     <div className="flex flex-col gap-2">
@@ -43,6 +69,7 @@ export function Charts({ rows, assetSeries, incomeSeries, timeline }: Props) {
         title={de.assetsPanelTitle}
         hint={de.assetsPanelHint}
         series={assetSeries}
+        extraLegend={[ghostAssetLegend]}
         height={200}
       >
         <ComposedChart data={rows} syncId={SYNC_ID} margin={CHART_MARGIN}>
@@ -80,6 +107,16 @@ export function Charts({ rows, assetSeries, incomeSeries, timeline }: Props) {
               isAnimationActive={false}
             />
           ))}
+          <Line
+            type="monotone"
+            dataKey="ghostAssetValue"
+            name={ghostScenarioName}
+            stroke={chartInk.secondary}
+            strokeDasharray="5 4"
+            strokeWidth={1.5}
+            dot={false}
+            isAnimationActive={false}
+          />
           <Tooltip
             cursor={{ stroke: chartInk.axis, strokeWidth: 1 }}
             content={(props) => (
@@ -100,8 +137,9 @@ export function Charts({ rows, assetSeries, incomeSeries, timeline }: Props) {
         hint={de.incomePanelHint}
         series={incomeSeries}
         extraLegend={[
-          { key: 'target', name: de.target, color: chartInk.primary, kind: 'line' },
+          { key: 'target', name: targetLegendName, color: chartInk.primary, kind: 'line' },
           { key: 'gap', name: de.gap, color: chartInk.gap, kind: 'hatch' },
+          ghostIncomeLegend,
         ]}
         height={280}
       >
@@ -181,6 +219,16 @@ export function Charts({ rows, assetSeries, incomeSeries, timeline }: Props) {
             dot={false}
             isAnimationActive={false}
           />
+          <Line
+            type="monotone"
+            dataKey="ghostIncome"
+            name={ghostScenarioName}
+            stroke={chartInk.secondary}
+            strokeDasharray="5 4"
+            strokeWidth={1.5}
+            dot={false}
+            isAnimationActive={false}
+          />
           <Tooltip
             cursor={{ stroke: chartInk.axis, strokeWidth: 1 }}
             content={(props) => (
@@ -204,7 +252,7 @@ export function Charts({ rows, assetSeries, incomeSeries, timeline }: Props) {
   )
 }
 
-type LegendEntry = ChartSeries & { kind?: 'area' | 'line' | 'hatch' }
+type LegendEntry = ChartSeries & { kind?: 'area' | 'line' | 'hatch' | 'dashed' }
 
 function Panel({
   title,
@@ -260,6 +308,15 @@ function Swatch({ entry }: { entry: LegendEntry }) {
         aria-hidden
         className="inline-block h-0.5 w-4 rounded-full"
         style={{ background: entry.color }}
+      />
+    )
+  }
+  if (entry.kind === 'dashed') {
+    return (
+      <span
+        aria-hidden
+        className="inline-block w-4"
+        style={{ borderTop: `1.5px dashed ${entry.color}` }}
       />
     )
   }

@@ -3,7 +3,14 @@ import { formatEuro } from '../format'
 import { de } from '../i18n/de'
 import { chartInk } from '../theme'
 
-export function Summary({ summary }: { summary: ProjectionSummary }) {
+type Props = {
+  summary: ProjectionSummary
+  /** The inactive scenario's summary and name, shown as a smaller muted line. */
+  ghostSummary: ProjectionSummary
+  ghostScenarioName: string
+}
+
+export function Summary({ summary, ghostSummary, ghostScenarioName }: Props) {
   return (
     <section
       className="rounded-lg border p-3"
@@ -11,23 +18,34 @@ export function Summary({ summary }: { summary: ProjectionSummary }) {
     >
       <h2 className="mb-2 text-sm font-semibold">{de.summaryTitle}</h2>
       <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <Figure label={de.assetValueAtRetirement} value={formatEuro(summary.assetValueAtRetirement)} />
+        <Figure
+          label={de.assetValueAtRetirement}
+          value={formatEuro(summary.assetValueAtRetirement)}
+          ghostValue={formatEuro(ghostSummary.assetValueAtRetirement)}
+          ghostScenarioName={ghostScenarioName}
+        />
         <Figure
           label={de.incomeAtRetirement}
           value={formatEuro(summary.incomeAtRetirement)}
           note={de.perMonth}
+          ghostValue={formatEuro(ghostSummary.incomeAtRetirement)}
+          ghostScenarioName={ghostScenarioName}
         />
         <Figure
           label={de.gapAtRetirement}
           value={formatEuro(summary.gapAtRetirement)}
           note={de.perMonth}
           highlight={summary.gapAtRetirement > 0}
+          ghostValue={formatEuro(ghostSummary.gapAtRetirement)}
+          ghostScenarioName={ghostScenarioName}
         />
         <Figure
           label={de.averageGap}
           value={formatEuro(summary.averageGap)}
           note={de.perMonth}
           highlight={summary.averageGap > 0}
+          ghostValue={formatEuro(ghostSummary.averageGap)}
+          ghostScenarioName={ghostScenarioName}
         />
       </dl>
     </section>
@@ -39,11 +57,15 @@ function Figure({
   value,
   note,
   highlight = false,
+  ghostValue,
+  ghostScenarioName,
 }: {
   label: string
   value: string
   note?: string
   highlight?: boolean
+  ghostValue: string
+  ghostScenarioName: string
 }) {
   return (
     <div>
@@ -61,6 +83,9 @@ function Figure({
           </span>
         ) : null}
       </dd>
+      <p className="text-xs" style={{ color: chartInk.muted }}>
+        {ghostScenarioName}: {ghostValue}
+      </p>
     </div>
   )
 }
