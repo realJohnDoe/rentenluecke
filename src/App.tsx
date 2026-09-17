@@ -1,4 +1,4 @@
-import { useMemo, useReducer, useState } from 'react'
+import { useEffect, useMemo, useReducer, useState } from 'react'
 import { Charts } from './components/Charts'
 import { Summary } from './components/Summary'
 import { PlanForm } from './components/PlanForm'
@@ -8,17 +8,45 @@ import { Toolbar } from './components/Toolbar'
 import { defaultPlan } from './model/defaultPlan'
 import { buildSeries, toChartRows } from './model/chartRows'
 import { project, resolveTimeline } from './model/finance'
+import { parsePlan } from './model/schema'
 import { planReducer } from './state/planReducer'
-import type { Scenario, ValueMode } from './model/types'
+import type { Plan, Scenario, ValueMode } from './model/types'
 import { de } from './i18n/de'
 import { chartInk } from './theme'
 
+const STORAGE_KEY = 'rentenluecke:plan:v1'
+
+/** A corrupt or outdated stored value is silently ignored in favour of `defaultPlan`. */
+function loadStoredPlan(): Plan {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (raw === null) return defaultPlan
+    const result = parsePlan(JSON.parse(raw))
+    return result.ok ? result.plan : defaultPlan
+  } catch {
+    return defaultPlan
+  }
+}
+
 export function App() {
-  const [plan, dispatch] = useReducer(planReducer, defaultPlan)
+  const [plan, dispatch] = useReducer(planReducer, undefined, loadStoredPlan)
   // Both are view options, never part of the plan — see the "What is a Plan"
   // convention.
   const [scenario, setScenario] = useState<Scenario>('continue')
   const [valueMode, setValueMode] = useState<ValueMode>('real')
+
+  // Autosave the plan only — never the view options above — debounced so
+  // rapid edits (e.g. dragging a slider) don't hit localStorage every tick.
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(plan))
+      } catch {
+        // localStorage can throw (e.g. private browsing); autosave is best-effort.
+      }
+    }, 300)
+    return () => clearTimeout(timeout)
+  }, [plan])
 
   // Both scenarios are always projected, keyed only on what actually changes
   // their result, so flipping the active scenario never recomputes either one.
@@ -53,6 +81,8 @@ export function App() {
         onScenarioChange={setScenario}
         valueMode={valueMode}
         onValueModeChange={setValueMode}
+        plan={plan}
+        dispatch={dispatch}
       />
 
       <div className="grid gap-3 lg:grid-cols-[minmax(0,360px)_1fr] lg:items-start">

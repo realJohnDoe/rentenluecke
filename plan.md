@@ -223,8 +223,8 @@ Make the two view options switchable and show the other scenario as a ghost.
 
 ### Tasks
 
-- [ ] `npm install zod yaml` (runtime dependencies).
-- [ ] **`src/model/schema.ts`** — a zod schema mirroring `Plan`, with `version`
+- [x] `npm install zod yaml` (runtime dependencies).
+- [x] **`src/model/schema.ts`** — a zod schema mirroring `Plan`, with `version`
   literal `1`. Export
 
   ```ts
@@ -239,7 +239,7 @@ Make the two view options switchable and show the other scenario as a ghost.
   do not put German text in `src/model/`. Leave a clearly marked spot for future
   version migrations: switch on `version` before validating, and map an unknown
   version to `code: 'bad_version'`.
-- [ ] **`src/model/io.ts`** —
+- [x] **`src/model/io.ts`** —
   `serialisePlan(plan, format: 'json' | 'yaml'): string`,
   `deserialisePlan(text: string): ReturnType<typeof parsePlan>` (try JSON first,
   fall back to YAML; a YAML syntax error becomes
@@ -248,21 +248,21 @@ Make the two view options switchable and show the other scenario as a ghost.
   `downloadPlan(plan, format)` (Blob + object URL + synthetic `<a>` click,
   filename `rentenplan-<ISO date>.json|yaml`), and `readPlanFile(file: File)`.
   Keep DOM access in `downloadPlan`/`readPlanFile` only, so the rest is testable.
-- [ ] **Export/import UI** in `Toolbar.tsx`: two export buttons (JSON, YAML), one
+- [x] **Export/import UI** in `Toolbar.tsx`: two export buttons (JSON, YAML), one
   import button opening a hidden `<input type="file" accept=".json,.yaml,.yml">`,
   and an inline error region (`role="alert"`) for a failed import. On success,
   `dispatch({ type: 'replacePlan', plan })`.
-- [ ] **localStorage autosave.** Key `rentenluecke:plan:v1`. Load once on mount
+- [x] **localStorage autosave.** Key `rentenluecke:plan:v1`. Load once on mount
   through `parsePlan` (a corrupt or outdated value is silently ignored and
   `defaultPlan` is used); save on every plan change, debounced ~300 ms. Wrap both
   reads and writes in try/catch — storage can throw in private windows. Persist
   the plan only, never the view options.
-- [ ] **Tests** in `src/model/io.test.ts`: a JSON round trip and a YAML round trip
+- [x] **Tests** in `src/model/io.test.ts`: a JSON round trip and a YAML round trip
   both return a plan deep-equal to the original; a plan with an unknown extra key
   still parses; a missing required field yields `ok: false` with an issue whose
   `path` names the field; malformed YAML yields `ok: false` rather than throwing;
   the serialised output contains no `scenario` or `valueMode` key.
-- [ ] **Polish.** A short `hint` under each input explaining what to enter and in
+- [x] **Polish.** A short `hint` under each input explaining what to enter and in
   which euros (see the money convention). The no-taxes note from `de.disclaimer`
   stays in the footer. Check the ~390px layout: inputs full width, charts still
   legible, no horizontal scroll. Update `README.md` with a screenshot, the live
