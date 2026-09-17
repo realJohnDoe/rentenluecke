@@ -91,6 +91,8 @@ export const de = {
   // Shared entry-card controls
   enabled: 'Aktiv',
   removeEntry: 'Entfernen',
+  expandEntry: 'Details anzeigen',
+  collapseEntry: 'Details verbergen',
 
   disclaimer:
     'Modellrechnung ohne Steuern, Kranken- und Pflegeversicherung. Keine Anlageberatung.',

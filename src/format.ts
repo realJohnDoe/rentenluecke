@@ -6,6 +6,8 @@ const euro = new Intl.NumberFormat('de-DE', {
 
 const millions = new Intl.NumberFormat('de-DE', { maximumFractionDigits: 1 })
 
+const percent = new Intl.NumberFormat('de-DE', { maximumFractionDigits: 1 })
+
 /** "2.500 €" — for tooltips and key figures. */
 export function formatEuro(value: number): string {
   return euro.format(value)
@@ -24,4 +26,9 @@ export function formatEuroAxis(value: number): string {
 /** "67" — ages are shown as whole years on the axis. */
 export function formatAge(age: number): string {
   return String(Math.round(age))
+}
+
+/** "1,5 %" — a rate fraction (0.015) as a percentage, for compact summaries. */
+export function formatPercent(fraction: number): string {
+  return `${percent.format(fraction * 100)} %`
 }
