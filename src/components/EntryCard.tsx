@@ -19,8 +19,10 @@ type Props = {
 
 /**
  * Row shell shared by pension and asset cards: a header (swatch, enable
- * toggle, name, expand/remove) plus either a one-line summary or the full
- * field grid passed as `children`, depending on `expanded`.
+ * toggle, name, expand) plus either a one-line summary or the full field
+ * grid passed as `children` with a remove icon below it, depending on
+ * `expanded`. Remove lives only in the expanded view so it can't be hit
+ * by accident while scanning the collapsed list.
  */
 export function EntryCard({
   color,
@@ -67,21 +69,25 @@ export function EntryCard({
         >
           <ChevronIcon expanded={expanded} />
         </button>
-        <button
-          type="button"
-          onClick={onRemove}
-          className="shrink-0 text-xs"
-          style={{ color: chartInk.muted }}
-        >
-          {de.removeEntry}
-        </button>
       </div>
       {expanded ? (
         <div
-          className="grid gap-2 border-t px-3 pb-3 pt-3 sm:grid-cols-2"
+          className="border-t px-3 pb-3 pt-3"
           style={{ borderColor: 'var(--hairline)' }}
         >
-          {children}
+          <div className="grid gap-2 sm:grid-cols-2">{children}</div>
+          <div className="mt-3 flex justify-end">
+            <button
+              type="button"
+              onClick={onRemove}
+              aria-label={de.removeEntry}
+              title={de.removeEntry}
+              className="shrink-0 rounded p-1"
+              style={{ color: chartInk.gap }}
+            >
+              <TrashIcon />
+            </button>
+          </div>
         </div>
       ) : (
         <button
@@ -111,6 +117,20 @@ function ChevronIcon({ expanded }: { expanded: boolean }) {
         d="M4 6l4 4 4-4"
         stroke="currentColor"
         strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
+function TrashIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden>
+      <path
+        d="M3 4.5h10M6.5 4.5V3a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v1.5M6.5 7.5v4M9.5 7.5v4M4 4.5l.6 8.1a1 1 0 0 0 1 .9h4.8a1 1 0 0 0 1-.9l.6-8.1"
+        stroke="currentColor"
+        strokeWidth="1.3"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
