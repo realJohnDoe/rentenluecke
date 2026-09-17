@@ -1,11 +1,11 @@
 import { useRef, useState } from 'react'
 import type { ChangeEvent, Dispatch } from 'react'
+import { Button } from './ui/Button'
 import type { Plan } from '../model/types'
 import type { PlanAction } from '../state/planReducer'
 import type { PlanIssue } from '../model/schema'
 import { downloadPlan, readPlanFile } from '../model/io'
 import { de } from '../i18n/de'
-import { chartInk } from '../theme'
 
 type Props = {
   plan: Plan
@@ -37,12 +37,12 @@ export function PlanIo({ plan, dispatch }: Props) {
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex flex-wrap items-center gap-3">
-        <span className="text-xs font-medium" style={{ color: chartInk.secondary }}>
+      <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+        <span className="basis-full text-xs font-medium text-ink-secondary sm:basis-auto">
           {de.planIoLabel}
         </span>
-        <ToolbarButton onClick={() => downloadPlan(plan)}>{de.exportYaml}</ToolbarButton>
-        <ToolbarButton onClick={() => fileInputRef.current?.click()}>{de.importPlan}</ToolbarButton>
+        <Button onClick={() => downloadPlan(plan)}>{de.exportYaml}</Button>
+        <Button onClick={() => fileInputRef.current?.click()}>{de.importPlan}</Button>
         <input
           ref={fileInputRef}
           type="file"
@@ -52,11 +52,7 @@ export function PlanIo({ plan, dispatch }: Props) {
         />
       </div>
       {importIssues.length > 0 ? (
-        <div
-          role="alert"
-          className="rounded-md border px-3 py-2 text-xs"
-          style={{ borderColor: chartInk.gap, color: chartInk.gap, background: chartInk.surface }}
-        >
+        <div className="rounded-lg border border-critical bg-surface px-3 py-2 text-xs text-critical" role="alert">
           <p className="font-medium">{de.importErrorTitle}</p>
           {importIssues.map((issue, index) => (
             <p key={index}>{de.importError(issue)}</p>
@@ -64,18 +60,5 @@ export function PlanIo({ plan, dispatch }: Props) {
         </div>
       ) : null}
     </div>
-  )
-}
-
-function ToolbarButton({ onClick, children }: { onClick: () => void; children: string }) {
-  return (
-    <button
-      type="button"
-      className="rounded-md border px-3 py-1.5 text-xs font-medium"
-      style={{ borderColor: 'var(--hairline)', color: chartInk.secondary, background: chartInk.surface }}
-      onClick={onClick}
-    >
-      {children}
-    </button>
   )
 }

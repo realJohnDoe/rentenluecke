@@ -1,12 +1,14 @@
-import { useEffect, useRef, useState, type Dispatch } from 'react'
+import type { Dispatch } from 'react'
 import { NumberField } from './NumberField'
 import { EntryCard } from './EntryCard'
+import { Card } from './ui/Card'
+import { Button } from './ui/Button'
+import { useExpandedEntries } from '../hooks/useExpandedEntries'
 import { pensionColor } from '../model/chartRows'
 import type { Pension, Plan } from '../model/types'
 import type { PlanAction } from '../state/planReducer'
 import { de } from '../i18n/de'
 import { formatEuro, formatPercent } from '../format'
-import { chartInk } from '../theme'
 
 type Props = {
   plan: Plan
@@ -14,37 +16,14 @@ type Props = {
 }
 
 export function PensionList({ plan, dispatch }: Props) {
-  const [expandedIds, setExpandedIds] = useState<Set<string>>(() => new Set())
-  // Newly added pensions (ids not seen on the previous render) start expanded
-  // so their defaults are immediately editable.
-  const knownIds = useRef(new Set(plan.pensions.map((pension) => pension.id)))
-  useEffect(() => {
-    const currentIds = plan.pensions.map((pension) => pension.id)
-    const added = currentIds.filter((id) => !knownIds.current.has(id))
-    if (added.length > 0) setExpandedIds((prev) => new Set([...prev, ...added]))
-    knownIds.current = new Set(currentIds)
-  }, [plan.pensions])
-
-  const toggle = (id: string) =>
-    setExpandedIds((prev) => {
-      const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
-      return next
-    })
+  const { isExpanded, toggle } = useExpandedEntries(plan.pensions.map((pension) => pension.id))
 
   return (
-    <section
-      className="rounded-lg border p-3"
-      style={{ background: chartInk.surface, borderColor: 'var(--hairline)' }}
-    >
-      <h2 className="mb-2 text-sm font-semibold">{de.pensionsTitle}</h2>
+    <Card title={de.pensionsTitle}>
       {plan.pensions.length === 0 ? (
-        <p className="text-xs" style={{ color: chartInk.muted }}>
-          {de.pensionsEmpty}
-        </p>
+        <p className="text-xs text-ink-muted">{de.pensionsEmpty}</p>
       ) : (
-        <ul className="flex flex-col gap-3">
+        <ul className="flex flex-col gap-2">
           {plan.pensions.map((pension) => (
             <PensionCard
               key={pension.id}
@@ -52,21 +31,16 @@ export function PensionList({ plan, dispatch }: Props) {
               color={pensionColor(plan, pension.id)}
               retirementAge={plan.retirementAge}
               dispatch={dispatch}
-              expanded={expandedIds.has(pension.id)}
+              expanded={isExpanded(pension.id)}
               onToggle={() => toggle(pension.id)}
             />
           ))}
         </ul>
       )}
-      <button
-        type="button"
-        className="mt-3 rounded-md border px-3 py-1.5 text-xs font-medium"
-        style={{ borderColor: 'var(--hairline)', color: chartInk.secondary }}
-        onClick={() => dispatch({ type: 'addPension' })}
-      >
-        {de.addPension}
-      </button>
-    </section>
+      <div className="mt-3">
+        <Button onClick={() => dispatch({ type: 'addPension' })}>{de.addPension}</Button>
+      </div>
+    </Card>
   )
 }
 

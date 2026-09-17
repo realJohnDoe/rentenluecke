@@ -1,12 +1,14 @@
-import { useEffect, useRef, useState, type Dispatch } from 'react'
+import type { Dispatch } from 'react'
 import { NumberField } from './NumberField'
 import { EntryCard } from './EntryCard'
+import { Card } from './ui/Card'
+import { Button } from './ui/Button'
+import { useExpandedEntries } from '../hooks/useExpandedEntries'
 import { assetColor } from '../model/chartRows'
 import type { Asset, Plan } from '../model/types'
 import type { PlanAction } from '../state/planReducer'
 import { de } from '../i18n/de'
 import { formatEuro, formatPercent } from '../format'
-import { chartInk } from '../theme'
 
 type Props = {
   plan: Plan
@@ -14,58 +16,30 @@ type Props = {
 }
 
 export function AssetList({ plan, dispatch }: Props) {
-  const [expandedIds, setExpandedIds] = useState<Set<string>>(() => new Set())
-  // Newly added assets (ids not seen on the previous render) start expanded
-  // so their defaults are immediately editable.
-  const knownIds = useRef(new Set(plan.assets.map((asset) => asset.id)))
-  useEffect(() => {
-    const currentIds = plan.assets.map((asset) => asset.id)
-    const added = currentIds.filter((id) => !knownIds.current.has(id))
-    if (added.length > 0) setExpandedIds((prev) => new Set([...prev, ...added]))
-    knownIds.current = new Set(currentIds)
-  }, [plan.assets])
-
-  const toggle = (id: string) =>
-    setExpandedIds((prev) => {
-      const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
-      return next
-    })
+  const { isExpanded, toggle } = useExpandedEntries(plan.assets.map((asset) => asset.id))
 
   return (
-    <section
-      className="rounded-lg border p-3"
-      style={{ background: chartInk.surface, borderColor: 'var(--hairline)' }}
-    >
-      <h2 className="mb-2 text-sm font-semibold">{de.assetListTitle}</h2>
+    <Card title={de.assetListTitle}>
       {plan.assets.length === 0 ? (
-        <p className="text-xs" style={{ color: chartInk.muted }}>
-          {de.assetsEmpty}
-        </p>
+        <p className="text-xs text-ink-muted">{de.assetsEmpty}</p>
       ) : (
-        <ul className="flex flex-col gap-3">
+        <ul className="flex flex-col gap-2">
           {plan.assets.map((asset) => (
             <AssetCard
               key={asset.id}
               asset={asset}
               color={assetColor(plan, asset.id)}
               dispatch={dispatch}
-              expanded={expandedIds.has(asset.id)}
+              expanded={isExpanded(asset.id)}
               onToggle={() => toggle(asset.id)}
             />
           ))}
         </ul>
       )}
-      <button
-        type="button"
-        className="mt-3 rounded-md border px-3 py-1.5 text-xs font-medium"
-        style={{ borderColor: 'var(--hairline)', color: chartInk.secondary }}
-        onClick={() => dispatch({ type: 'addAsset' })}
-      >
-        {de.addAsset}
-      </button>
-    </section>
+      <div className="mt-3">
+        <Button onClick={() => dispatch({ type: 'addAsset' })}>{de.addAsset}</Button>
+      </div>
+    </Card>
   )
 }
 
@@ -142,6 +116,8 @@ function AssetCard({
 function assetSummary(asset: Asset): string {
   const parts = [formatEuro(asset.currentValue)]
   if (asset.monthlyContribution !== 0) parts.push(`+${formatEuro(asset.monthlyContribution)}/Monat`)
-  parts.push(`${formatPercent(asset.annualReturn)} / ${formatPercent(asset.annualReturnInRetirement)}`)
+  parts.push(
+    `${formatPercent(asset.annualReturn)} / ${formatPercent(asset.annualReturnInRetirement)}`,
+  )
   return parts.join(' · ')
 }

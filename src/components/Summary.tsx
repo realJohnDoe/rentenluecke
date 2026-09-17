@@ -1,7 +1,7 @@
+import { Card } from './ui/Card'
 import type { ProjectionSummary } from '../model/types'
 import { formatEuro } from '../format'
 import { de } from '../i18n/de'
-import { chartInk } from '../theme'
 
 type Props = {
   summary: ProjectionSummary
@@ -12,12 +12,13 @@ type Props = {
 
 export function Summary({ summary, ghostSummary, ghostScenarioName }: Props) {
   return (
-    <section
-      className="rounded-lg border p-3"
-      style={{ background: chartInk.surface, borderColor: 'var(--hairline)' }}
-    >
-      <h2 className="mb-2 text-sm font-semibold">{de.summaryTitle}</h2>
-      <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+    <Card title={de.summaryTitle}>
+      {/*
+       * `subgrid` is what keeps the four figures aligned: the labels wrap to
+       * two lines at some widths and not others, and without a shared row
+       * track the values underneath would sit at four different heights.
+       */}
+      <dl className="grid grid-cols-2 grid-rows-[auto_auto_auto] gap-x-4 gap-y-5 sm:grid-cols-4">
         <Figure
           label={de.assetValueAtRetirement}
           value={formatEuro(summary.assetValueAtRetirement)}
@@ -48,7 +49,7 @@ export function Summary({ summary, ghostSummary, ghostScenarioName }: Props) {
           ghostScenarioName={ghostScenarioName}
         />
       </dl>
-    </section>
+    </Card>
   )
 }
 
@@ -68,24 +69,23 @@ function Figure({
   ghostScenarioName: string
 }) {
   return (
-    <div>
-      <dt className="text-xs" style={{ color: chartInk.muted }}>
-        {label}
-      </dt>
+    <div className="grid grid-rows-subgrid row-span-3 gap-0">
+      <dt className="text-xs leading-snug text-ink-muted">{label}</dt>
       <dd
-        className="text-lg font-semibold"
-        style={highlight ? { color: chartInk.gap } : undefined}
+        className={`self-end text-xl font-semibold tabular-nums tracking-tight
+          ${highlight ? 'text-critical' : ''}`}
       >
         {value}
         {note ? (
-          <span className="ml-1 text-xs font-normal" style={{ color: chartInk.muted }}>
-            {note}
-          </span>
+          <span className="ml-1 text-xs font-normal text-ink-muted">{note}</span>
         ) : null}
       </dd>
-      <p className="text-xs" style={{ color: chartInk.muted }}>
+      {/* A second `dd` rather than a `p`: only `dt` and `dd` are allowed
+          inside a `dl`'s grouping `div`, and the ghost figure really is a
+          second description of the same term. */}
+      <dd className="mt-0.5 text-xs tabular-nums text-ink-muted">
         {ghostScenarioName}: {ghostValue}
-      </p>
+      </dd>
     </div>
   )
 }

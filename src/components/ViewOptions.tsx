@@ -1,6 +1,5 @@
 import type { Scenario, ValueMode } from '../model/types'
 import { de } from '../i18n/de'
-import { chartInk } from '../theme'
 
 type Props = {
   scenario: Scenario
@@ -14,10 +13,18 @@ type Props = {
  * in the plan — see the "What is a Plan" convention). They only affect the
  * projection shown in `Summary` and `Charts`, never the input cards, so they
  * sit directly above those two rather than at the top of the page.
+ *
+ * The scenario control gets the wider share of the row: its two labels are
+ * whole sentences, while "Heutige Kaufkraft / Nominal" is a pair of words.
  */
-export function ViewOptions({ scenario, onScenarioChange, valueMode, onValueModeChange }: Props) {
+export function ViewOptions({
+  scenario,
+  onScenarioChange,
+  valueMode,
+  onValueModeChange,
+}: Props) {
   return (
-    <div className="flex flex-wrap gap-3">
+    <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-4">
       <SegmentedControl
         label={de.scenarioToolbarLabel}
         value={scenario}
@@ -52,13 +59,20 @@ function SegmentedControl<T extends string>({
   options: { value: T; label: string }[]
 }) {
   return (
-    <div className="flex flex-col gap-1">
-      <span className="text-xs font-medium" style={{ color: chartInk.secondary }}>
-        {label}
-      </span>
+    <div className="flex flex-col gap-1.5">
+      <span className="text-xs font-medium text-ink-secondary">{label}</span>
+      {/*
+       * Two sizing rules for two situations. On a phone the control fills the
+       * column and `grid-cols-2` keeps its halves equal, so it can't go ragged
+       * when one label wraps. From `sm` it switches to a content-width flex
+       * row: "Weiter einzahlen bis Rentenbeginn" is three times the length of
+       * "Nominal", and holding them to equal widths there made the pair wider
+       * than the panel and pushed the second control onto its own line.
+       */}
       <div
-        className="inline-flex overflow-hidden rounded-md border"
-        style={{ borderColor: 'var(--hairline)' }}
+        role="group"
+        aria-label={label}
+        className="grid grid-cols-2 gap-1 rounded-lg border border-hairline bg-surface p-1 sm:flex sm:w-fit"
       >
         {options.map((option) => {
           const active = option.value === value
@@ -67,12 +81,13 @@ function SegmentedControl<T extends string>({
               key={option.value}
               type="button"
               aria-pressed={active}
-              className="px-3 py-1.5 text-xs font-medium"
-              style={{
-                background: active ? chartInk.primary : chartInk.surface,
-                color: active ? chartInk.surface : chartInk.secondary,
-              }}
               onClick={() => onChange(option.value)}
+              className={`min-h-9 rounded-md px-3 py-1.5 text-xs font-medium leading-snug
+                transition-colors sm:whitespace-nowrap ${
+                  active
+                    ? 'bg-ink text-surface'
+                    : 'text-ink-secondary hover:bg-raised hover:text-ink'
+                }`}
             >
               {option.label}
             </button>

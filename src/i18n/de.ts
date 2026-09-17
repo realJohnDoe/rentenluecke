@@ -18,8 +18,15 @@ export const de = {
 
   // Axes and reference marks
   axisAge: 'Alter',
-  axisEuroTotal: 'Vermögen in €',
-  axisEuroPerMonth: '€ pro Monat',
+  /**
+   * The unit shown on a chart panel's title row. On a narrow panel the ticks
+   * are divided down to two or three digits, and the factor they were divided
+   * by is named here rather than repeated on every tick.
+   */
+  axisUnitEuro: '€',
+  axisUnitThousandEuro: 'Tsd. €',
+  axisUnitMillionEuro: 'Mio. €',
+  axisUnitPerMonth: (unit: string) => `${unit} pro Monat`,
   retirementStart: 'Rentenbeginn',
 
   // Series
