@@ -4,7 +4,8 @@ import { Summary } from './components/Summary'
 import { PlanForm } from './components/PlanForm'
 import { PensionList } from './components/PensionList'
 import { AssetList } from './components/AssetList'
-import { Toolbar } from './components/Toolbar'
+import { ViewOptions } from './components/ViewOptions'
+import { PlanIo } from './components/PlanIo'
 import { defaultPlan } from './model/defaultPlan'
 import { buildSeries, toChartRows } from './model/chartRows'
 import { project, resolveTimeline } from './model/finance'
@@ -76,15 +77,6 @@ export function App() {
         </p>
       </header>
 
-      <Toolbar
-        scenario={scenario}
-        onScenarioChange={setScenario}
-        valueMode={valueMode}
-        onValueModeChange={setValueMode}
-        plan={plan}
-        dispatch={dispatch}
-      />
-
       <div className="grid gap-3 lg:grid-cols-[minmax(0,360px)_1fr] lg:items-start">
         <div className="flex flex-col gap-3">
           <PlanForm plan={plan} dispatch={dispatch} />
@@ -93,6 +85,12 @@ export function App() {
         </div>
 
         <div className="flex flex-col gap-3">
+          <ViewOptions
+            scenario={scenario}
+            onScenarioChange={setScenario}
+            valueMode={valueMode}
+            onValueModeChange={setValueMode}
+          />
           <Summary
             summary={projection.summary}
             ghostSummary={ghostProjection.summary}
@@ -108,6 +106,8 @@ export function App() {
           />
         </div>
       </div>
+
+      <PlanIo plan={plan} dispatch={dispatch} />
 
       <footer className="text-xs" style={{ color: chartInk.muted }}>
         {de.disclaimer}
