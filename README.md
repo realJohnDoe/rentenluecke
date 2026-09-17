@@ -3,6 +3,10 @@
 Ein kleiner statischer Rechner für die **Rentenlücke**: Wie viel Geld steht im
 Monat zur Verfügung — und wie viel fehlt zur Wunschrente?
 
+**Live:** https://realjohndoe.github.io/rentenluecke/
+
+![Screenshot des Rentenlücken-Rechners](docs/screenshot.png)
+
 Die Seite zeigt zwei übereinanderliegende Diagramme mit gemeinsamer Altersachse:
 
 - **Vermögen** in € — Aufbau bis zum Rentenbeginn, danach Entnahme bis zum
@@ -11,7 +15,16 @@ Die Seite zeigt zwei übereinanderliegende Diagramme mit gemeinsamer Altersachse
   dem Vermögen, gestapelt, darüber die Wunschrente. Die schraffierte Fläche
   dazwischen ist die Rentenlücke.
 
-Modellrechnung ohne Steuern, Kranken- und Pflegeversicherung. Keine Anlageberatung.
+Das Modell ist deterministisch: Renten wachsen mit ihrer eigenen jährlichen
+Steigerung, Vermögenswerte verzinsen sich in der Ansparphase und in der
+Entnahmephase mit je eigener Rendite und werden ab Rentenbeginn linear bis zum
+Planungsende auf null abgebaut (Annuität), und die Wunschrente wird optional mit
+der Inflation hochgerechnet. Zwei Szenarien lassen sich vergleichen — Beiträge
+bis zum Rentenbeginn fortführen oder ab heute beitragsfrei stellen — und Beträge
+wahlweise in heutiger Kaufkraft oder nominal anzeigen. Der Plan lässt sich als
+YAML exportieren und wieder importieren und wird nebenbei im Browser
+zwischengespeichert. Modellrechnung ohne Steuern, Kranken- und
+Pflegeversicherung. Keine Anlageberatung.
 
 ## Entwicklung
 

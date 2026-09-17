@@ -1,4 +1,5 @@
 import type { Scenario } from '../model/types'
+import type { PlanIssue } from '../model/schema'
 
 /**
  * Every German string the UI shows. Code, data format and identifiers stay
@@ -59,6 +60,27 @@ export const de = {
   /** Short label for the inactive scenario, used in the ghost legend and Summary. */
   scenarioName: (scenario: Scenario) => (scenario === 'stop' ? 'Beitragsfrei' : 'Weiterzahlung'),
   kaufkrafterhalt: 'Kaufkrafterhalt',
+
+  // Export / import
+  planIoLabel: 'Plan sichern',
+  exportYaml: 'Als YAML exportieren',
+  importPlan: 'Plan importieren',
+  importErrorTitle: 'Import fehlgeschlagen',
+  importError: (issue: PlanIssue) => {
+    const field = issue.path || 'Datei'
+    switch (issue.code) {
+      case 'missing':
+        return `Pflichtfeld fehlt: ${field}`
+      case 'wrong_type':
+        return issue.path
+          ? `Ungültiger Wert bei: ${field}`
+          : 'Die Datei ist kein gültiger Rentenplan (JSON oder YAML).'
+      case 'out_of_range':
+        return `Wert außerhalb des gültigen Bereichs: ${field}`
+      case 'bad_version':
+        return 'Diese Datei stammt aus einer nicht unterstützten Version.'
+    }
+  },
 
   // Pension list
   pensionsTitle: 'Renten',
