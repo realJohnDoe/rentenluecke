@@ -1,6 +1,7 @@
 import { useId } from 'react'
 import type { ReactNode } from 'react'
 import { IconButton } from './ui/IconButton'
+import { Collapsible } from './ui/Collapsible'
 import { de } from '../i18n/de'
 
 type Props = {
@@ -24,6 +25,12 @@ type Props = {
  * grid passed as `children` with a remove icon below it, depending on
  * `expanded`. Remove lives only in the expanded view so it can't be hit
  * by accident while scanning the collapsed list.
+ *
+ * Both halves are always rendered, each in its own `Collapsible`, and the two
+ * trade places by unfolding rather than by swapping between frames: a card
+ * opens into its fields instead of the rest of the list jumping down the page
+ * to make room for them. `Collapsible` keeps the folded half inert, so only
+ * the visible one is reachable.
  *
  * A disabled entry dims its name and summary so the list shows at a glance
  * which entries the projection is actually counting.
@@ -54,7 +61,7 @@ export function EntryCard({
       <div className="flex items-center gap-2 p-2 pl-3">
         <span
           aria-hidden
-          className="inline-block size-3 shrink-0 rounded-sm"
+          className="inline-block size-3 shrink-0 rounded-sm transition-opacity"
           style={{ background: color, opacity: enabled ? 1 : 0.35 }}
         />
         <input
@@ -71,22 +78,20 @@ export function EntryCard({
           placeholder={namePlaceholder}
           aria-label={namePlaceholder}
           className={`h-10 min-w-0 flex-1 rounded-lg border border-hairline bg-surface px-3
-            text-base sm:text-sm ${enabled ? '' : 'text-ink-muted'}`}
+            text-base transition-colors sm:text-sm ${enabled ? '' : 'text-ink-muted'}`}
         />
         <IconButton
           onClick={onToggle}
           label={expanded ? de.collapseEntry : de.expandEntry}
           expanded={expanded}
-          /* Only while the region exists — `aria-controls` pointing at an id
-             that is not in the document is worse than leaving it off. */
-          controls={expanded ? detailsId : undefined}
+          controls={detailsId}
         >
           <ChevronIcon expanded={expanded} />
         </IconButton>
       </div>
 
-      {expanded ? (
-        <div id={detailsId} className="border-t border-hairline px-3 pb-3 pt-3">
+      <Collapsible open={expanded} id={detailsId}>
+        <div className="border-t border-hairline px-3 pb-3 pt-3">
           <div className="grid gap-3 @md:grid-cols-2">{children}</div>
           <div className="mt-2 flex justify-end">
             <IconButton onClick={onRemove} label={de.removeEntry} tone="critical">
@@ -94,24 +99,26 @@ export function EntryCard({
             </IconButton>
           </div>
         </div>
-      ) : (
-        /*
-         * A second way to hit the same toggle, so the summary line is tappable
-         * too. It stays out of the accessibility tree: the chevron above is
-         * already the labelled control, and announcing the row twice would be
-         * noise rather than help.
-         */
+      </Collapsible>
+
+      {/*
+       * A second way to hit the same toggle, so the summary line is tappable
+       * too. It stays out of the accessibility tree: the chevron above is
+       * already the labelled control, and announcing the row twice would be
+       * noise rather than help.
+       */}
+      <Collapsible open={!expanded}>
         <button
           type="button"
           onClick={onToggle}
           tabIndex={-1}
           aria-hidden
           className={`block w-full truncate rounded-b-lg px-3 pb-3 text-left text-xs tabular-nums
-            ${enabled ? 'text-ink-muted' : 'text-ink-muted/60'}`}
+            transition-colors ${enabled ? 'text-ink-muted' : 'text-ink-muted/60'}`}
         >
           {summary}
         </button>
-      )}
+      </Collapsible>
     </li>
   )
 }
@@ -124,7 +131,7 @@ function ChevronIcon({ expanded }: { expanded: boolean }) {
       viewBox="0 0 16 16"
       fill="none"
       aria-hidden
-      className="transition-transform duration-150"
+      className="transition-transform duration-200"
       style={{ transform: expanded ? 'rotate(180deg)' : undefined }}
     >
       <path
