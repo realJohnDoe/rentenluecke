@@ -2,6 +2,7 @@ import { useId } from 'react'
 import type { CSSProperties, ReactNode, Ref } from 'react'
 import { IconButton } from './ui/IconButton'
 import { Collapsible } from './ui/Collapsible'
+import { Switch } from './ui/Switch'
 import { de } from '../i18n/de'
 
 type Props = {
@@ -90,12 +91,10 @@ export function EntryCard({
           className="inline-block size-3 shrink-0 rounded-sm transition-opacity"
           style={{ background: color, opacity: enabled ? 1 : 0.35 }}
         />
-        <input
-          type="checkbox"
+        <Switch
           checked={enabled}
-          onChange={(event) => onEnabledChange(event.target.checked)}
-          aria-label={`${de.enabled}: ${name || namePlaceholder}`}
-          className="size-5 shrink-0"
+          onChange={onEnabledChange}
+          label={`${de.enabled}: ${name || namePlaceholder}`}
         />
         <input
           type="text"
@@ -103,8 +102,10 @@ export function EntryCard({
           onChange={(event) => onNameChange(event.target.value)}
           placeholder={namePlaceholder}
           aria-label={namePlaceholder}
-          className={`h-10 min-w-0 flex-1 rounded-lg border border-hairline bg-surface px-3
-            text-base transition-colors sm:text-sm ${enabled ? '' : 'text-ink-muted'}`}
+          className={`h-10 min-w-0 flex-1 rounded-lg border border-transparent bg-transparent px-3
+            text-base font-medium transition-colors hover:border-hairline hover:bg-surface
+            focus-visible:border-hairline focus-visible:bg-surface sm:text-sm
+            ${enabled ? '' : 'text-ink-muted font-normal'}`}
         />
         <IconButton
           onClick={onToggle}
