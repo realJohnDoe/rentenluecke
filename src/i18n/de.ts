@@ -162,6 +162,7 @@ export const de = {
   removeEntry: 'Entfernen',
   expandEntry: 'Details anzeigen',
   collapseEntry: 'Details verbergen',
+  reorderEntry: (name: string) => `${name} verschieben`,
 
   disclaimer: 'Modellrechnung ohne Steuern, Kranken- und Pflegeversicherung. Keine Anlageberatung.',
 } as const

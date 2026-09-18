@@ -12,7 +12,7 @@ export type ChartRow = {
   /** Total for the inactive scenario, drawn as a dashed outline. */
   ghostAssetValue: number
   ghostIncome: number
-  /** Sum of every asset beyond the eight-colour palette. See `isOverflow`. */
+  /** Sum of every asset beyond the eight-colour palette. See `isOverflowAsset`/`isOverflowPension`. */
   otherAssetValue: number
   /** Sum of every pension and withdrawal beyond the eight-colour palette. */
   otherIncome: number
@@ -53,15 +53,15 @@ export function toChartRows(
       otherIncome: 0,
     }
     for (const [id, value] of Object.entries(point.assetValues)) {
-      if (isOverflow(plan, 'asset', id)) row.otherAssetValue += value
+      if (isOverflowAsset(plan, id)) row.otherAssetValue += value
       else row[assetValueKey(id)] = value
     }
     for (const [id, value] of Object.entries(point.withdrawalIncome)) {
-      if (isOverflow(plan, 'asset', id)) row.otherIncome += value
+      if (isOverflowAsset(plan, id)) row.otherIncome += value
       else row[withdrawalKey(id)] = value
     }
     for (const [id, value] of Object.entries(point.pensionIncome)) {
-      if (isOverflow(plan, 'pension', id)) row.otherIncome += value
+      if (isOverflowPension(plan, id)) row.otherIncome += value
       else row[pensionKey(id)] = value
     }
     return row
@@ -69,42 +69,44 @@ export function toChartRows(
 }
 
 /**
- * Position in the shared pension+asset colour sequence: pensions first, in
- * their fixed order in the plan, then assets. Stable across enabling and
- * disabling an entry, so a colour always names the same entity.
+ * Whether an entity falls outside the eight-colour palette, judged by its own
+ * `colorIndex` (see `Pension`/`Asset` in `types.ts`) rather than its current
+ * position — the slot is assigned once, at creation, and never moves, so
+ * dragging an entity around the list cannot push it into or out of overflow.
+ * Any entity past the eighth slot folds into the "Other" band (`otherIncome`
+ * / `otherAssetValue`) instead of reusing a hue that already names someone
+ * else.
  */
-function colorIndex(plan: Plan, kind: 'pension' | 'asset', id: string): number {
-  if (kind === 'pension') return plan.pensions.findIndex((pension) => pension.id === id)
-  return plan.pensions.length + plan.assets.findIndex((asset) => asset.id === id)
+function isOverflowPension(plan: Plan, id: string): boolean {
+  const pension = plan.pensions.find((candidate) => candidate.id === id)
+  return (pension?.colorIndex ?? 0) >= SERIES_SLOT_COUNT
 }
 
-/**
- * Whether an entity falls outside the eight-colour palette. Pensions and
- * assets share one colour sequence (see `colorIndex`), so an eighth pension
- * already exhausts it — any entity after that folds into the "Other" band
- * (`otherIncome` / `otherAssetValue`) instead of reusing a hue that already
- * names someone else.
- */
-function isOverflow(plan: Plan, kind: 'pension' | 'asset', id: string): boolean {
-  return colorIndex(plan, kind, id) >= SERIES_SLOT_COUNT
+function isOverflowAsset(plan: Plan, id: string): boolean {
+  const asset = plan.assets.find((candidate) => candidate.id === id)
+  return (asset?.colorIndex ?? 0) >= SERIES_SLOT_COUNT
 }
 
 /**
  * Colour slots are handed out across pensions and assets together, so an asset
  * keeps one identity in both panels and never shares a hue with a pension.
- * Disabled entries keep their slot: colour follows the entity, not its rank —
- * used both by the charts (only enabled entries) and by the input cards (every
- * entry, so a disabled one still shows the swatch it would get if re-enabled).
- * Past the eighth entity there is no slot left to keep, so every later entry
- * shares `otherSeriesColor` — the same colour the chart groups it under.
+ * Each entry's slot is `colorIndex`, assigned once at creation: colour follows
+ * the entity, not its rank, so disabling an entry or dragging it to a new spot
+ * in the list never changes its colour — used both by the charts (only
+ * enabled entries) and by the input cards (every entry, so a disabled one
+ * still shows the swatch it would get if re-enabled). Past the eighth entity
+ * there is no slot left to keep, so every later entry shares
+ * `otherSeriesColor` — the same colour the chart groups it under.
  */
 export function pensionColor(plan: Plan, id: string): string {
-  const index = colorIndex(plan, 'pension', id)
+  const pension = plan.pensions.find((candidate) => candidate.id === id)
+  const index = pension?.colorIndex ?? 0
   return index < SERIES_SLOT_COUNT ? seriesColor(index) : otherSeriesColor
 }
 
 export function assetColor(plan: Plan, id: string): string {
-  const index = colorIndex(plan, 'asset', id)
+  const asset = plan.assets.find((candidate) => candidate.id === id)
+  const index = asset?.colorIndex ?? 0
   return index < SERIES_SLOT_COUNT ? seriesColor(index) : otherSeriesColor
 }
 
@@ -122,7 +124,7 @@ export type IncomeSeries = {
 
 export function buildSeries(plan: Plan): { assets: ChartSeries[]; income: IncomeSeries } {
   const pensions = plan.pensions
-    .filter((pension) => pension.enabled && !isOverflow(plan, 'pension', pension.id))
+    .filter((pension) => pension.enabled && !isOverflowPension(plan, pension.id))
     .map((pension) => ({
       key: pensionKey(pension.id),
       name: pension.name,
@@ -130,7 +132,7 @@ export function buildSeries(plan: Plan): { assets: ChartSeries[]; income: Income
     }))
 
   const withdrawals = plan.assets
-    .filter((asset) => asset.enabled && !isOverflow(plan, 'asset', asset.id))
+    .filter((asset) => asset.enabled && !isOverflowAsset(plan, asset.id))
     .map((asset) => ({
       key: withdrawalKey(asset.id),
       name: de.withdrawalOf(asset.name),
@@ -138,7 +140,7 @@ export function buildSeries(plan: Plan): { assets: ChartSeries[]; income: Income
     }))
 
   const assets = plan.assets
-    .filter((asset) => asset.enabled && !isOverflow(plan, 'asset', asset.id))
+    .filter((asset) => asset.enabled && !isOverflowAsset(plan, asset.id))
     .map((asset) => ({
       key: assetValueKey(asset.id),
       name: asset.name,
@@ -146,10 +148,10 @@ export function buildSeries(plan: Plan): { assets: ChartSeries[]; income: Income
     }))
 
   const hasOverflowPension = plan.pensions.some(
-    (pension) => pension.enabled && isOverflow(plan, 'pension', pension.id),
+    (pension) => pension.enabled && isOverflowPension(plan, pension.id),
   )
   const hasOverflowAsset = plan.assets.some(
-    (asset) => asset.enabled && isOverflow(plan, 'asset', asset.id),
+    (asset) => asset.enabled && isOverflowAsset(plan, asset.id),
   )
   const otherIncome =
     hasOverflowPension || hasOverflowAsset

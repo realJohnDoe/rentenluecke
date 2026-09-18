@@ -26,6 +26,7 @@ function asset(overrides: Partial<Asset>): Asset {
     annualReturn: 0,
     monthlyContribution: 0,
     annualReturnInRetirement: 0,
+    colorIndex: 0,
     ...overrides,
   }
 }
@@ -38,6 +39,7 @@ function pension(overrides: Partial<Pension>): Pension {
     monthlyIfStopped: 0,
     monthlyIfContinued: 0,
     annualIncrease: 0,
+    colorIndex: 0,
     ...overrides,
   }
 }

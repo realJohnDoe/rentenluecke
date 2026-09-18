@@ -18,6 +18,7 @@ const basePlan: Plan = {
       monthlyIfStopped: 500,
       monthlyIfContinued: 1200,
       annualIncrease: 0.01,
+      colorIndex: 0,
     },
   ],
   assets: [
@@ -29,6 +30,7 @@ const basePlan: Plan = {
       annualReturn: 0.05,
       monthlyContribution: 200,
       annualReturnInRetirement: 0.02,
+      colorIndex: 1,
     },
   ],
 }
@@ -64,6 +66,36 @@ describe('planReducer / pensions', () => {
     const withTwo = planReducer(withOne, { type: 'addPension' })
     const ids = withTwo.pensions.map((pension) => pension.id)
     expect(new Set(ids).size).toBe(ids.length)
+  })
+
+  it('assigns a colour slot past every slot already in use, across pensions and assets', () => {
+    // basePlan already has colorIndex 0 (pension) and 1 (asset) in use.
+    const next = planReducer(basePlan, { type: 'addPension' })
+    expect(next.pensions[1]?.colorIndex).toBe(2)
+  })
+
+  it('reorders pensions to match the given id order', () => {
+    const withTwo = planReducer(basePlan, { type: 'addPension' })
+    const ids = withTwo.pensions.map((pension) => pension.id).reverse()
+    const next = planReducer(withTwo, { type: 'reorderPensions', ids })
+    expect(next.pensions.map((pension) => pension.id)).toEqual(ids)
+  })
+
+  it('reordering pensions leaves each one’s colour slot untouched', () => {
+    const withTwo = planReducer(basePlan, { type: 'addPension' })
+    const colorsBefore = new Map(
+      withTwo.pensions.map((pension) => [pension.id, pension.colorIndex]),
+    )
+    const reversedIds = withTwo.pensions.map((pension) => pension.id).reverse()
+    const next = planReducer(withTwo, { type: 'reorderPensions', ids: reversedIds })
+    for (const pension of next.pensions) {
+      expect(pension.colorIndex).toBe(colorsBefore.get(pension.id))
+    }
+  })
+
+  it('reordering with an id list that does not match the current pensions is a no-op', () => {
+    const next = planReducer(basePlan, { type: 'reorderPensions', ids: ['does-not-exist'] })
+    expect(next.pensions).toEqual(basePlan.pensions)
   })
 
   it('updates only the matching pension by id', () => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildSeries } from './chartRows'
+import { assetColor, buildSeries, pensionColor } from './chartRows'
 import type { Asset, Pension, Plan } from './types'
 
 const pension = (overrides: Partial<Pension>): Pension => ({
@@ -9,6 +9,7 @@ const pension = (overrides: Partial<Pension>): Pension => ({
   monthlyIfStopped: 500,
   monthlyIfContinued: 500,
   annualIncrease: 0,
+  colorIndex: 0,
   ...overrides,
 })
 
@@ -20,6 +21,7 @@ const asset = (overrides: Partial<Asset>): Asset => ({
   monthlyContribution: 0,
   annualReturn: 0,
   annualReturnInRetirement: 0,
+  colorIndex: 0,
   ...overrides,
 })
 
@@ -70,17 +72,39 @@ describe('buildSeries', () => {
   it('folds pensions and assets beyond the eight-colour palette into one "Other" band', () => {
     const plan: Plan = {
       ...basePlan,
-      pensions: Array.from({ length: 8 }, (_, i) => pension({ id: `p${i}` })),
-      assets: [asset({ id: 'a1' })],
+      pensions: Array.from({ length: 8 }, (_, i) => pension({ id: `p${i}`, colorIndex: i })),
+      assets: [asset({ id: 'a1', colorIndex: 8 })],
     }
     const { assets, income } = buildSeries(plan)
-    // The lone asset falls outside the shared 8-slot sequence (pensions
-    // already fill it), so it never gets its own colour in either panel —
-    // it folds into the single "Other" band instead.
+    // The lone asset's colorIndex falls outside the shared 8-slot sequence
+    // (pensions already fill it), so it never gets its own colour in either
+    // panel — it folds into the single "Other" band instead.
     expect(assets.map((s) => s.key)).toEqual(['otherAssetValue'])
     expect(income.pensions).toHaveLength(8)
     expect(income.withdrawals.map((s) => s.key)).toEqual(['otherIncome'])
     expect(new Set(income.pensions.map((s) => s.color)).size).toBe(8)
     expect(income.pensions.every((s) => s.color !== income.withdrawals[0]!.color)).toBe(true)
+  })
+})
+
+/**
+ * Colour follows the entity, not its rank: reordering `pensions`/`assets` (as
+ * a drag-and-drop reorder does) must not change what colour an id resolves
+ * to, even though `pensionColor`/`assetColor` are looked up by id.
+ */
+describe('pensionColor / assetColor', () => {
+  it('stays with the entity when the list order changes', () => {
+    const plan: Plan = {
+      ...basePlan,
+      pensions: [pension({ id: 'p1', colorIndex: 0 }), pension({ id: 'p2', colorIndex: 1 })],
+      assets: [asset({ id: 'a1', colorIndex: 2 })],
+    }
+    const reordered: Plan = {
+      ...plan,
+      pensions: [plan.pensions[1] as Pension, plan.pensions[0] as Pension],
+    }
+    expect(pensionColor(reordered, 'p1')).toBe(pensionColor(plan, 'p1'))
+    expect(pensionColor(reordered, 'p2')).toBe(pensionColor(plan, 'p2'))
+    expect(assetColor(reordered, 'a1')).toBe(assetColor(plan, 'a1'))
   })
 })

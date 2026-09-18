@@ -18,6 +18,8 @@ export type ParseResult = { ok: true; plan: Plan } | { ok: false; issues: PlanIs
 const age = z.number().min(0).max(100)
 const rate = z.number().min(-0.1).max(0.15)
 
+const colorIndex = z.number().int().min(0)
+
 const pensionSchemaV1 = z.object({
   id: z.string(),
   name: z.string(),
@@ -26,6 +28,7 @@ const pensionSchemaV1 = z.object({
   monthlyIfContinued: z.number().min(0),
   startAge: age.optional(),
   annualIncrease: rate,
+  colorIndex,
 })
 
 const assetSchemaV1 = z.object({
@@ -36,6 +39,7 @@ const assetSchemaV1 = z.object({
   annualReturn: rate,
   monthlyContribution: z.number().min(0),
   annualReturnInRetirement: rate,
+  colorIndex,
 })
 
 const planSchemaV1 = z.object({
@@ -68,11 +72,48 @@ export function parsePlan(input: unknown): ParseResult {
       return { ok: false, issues: [{ path: 'version', code: 'bad_version' }] }
   }
 
-  const result = planSchemaV1.safeParse(input)
+  const result = planSchemaV1.safeParse(withColorIndexDefaults(input))
   if (result.success) {
     return { ok: true, plan: result.data }
   }
   return { ok: false, issues: result.error.issues.map((issue) => toPlanIssue(issue, input)) }
+}
+
+/**
+ * Fills in `colorIndex` for a plan exported before that field existed, so an
+ * old file still imports instead of failing with "missing: colorIndex". Each
+ * entry gets its former, position-based colour (pensions first, then assets
+ * continuing the same sequence) — exactly what it already rendered as, since
+ * that is how colours were assigned before `colorIndex` existed. Only touches
+ * entries that are missing the field; a plan re-exported by this version of
+ * the app already carries it and passes through untouched. Left in place
+ * alongside the `version` switch above as the spot for future migrations.
+ */
+function withColorIndexDefaults(input: object): unknown {
+  const { pensions, assets } = input as { pensions?: unknown; assets?: unknown }
+  if (!Array.isArray(pensions) && !Array.isArray(assets)) return input
+
+  const pensionList = Array.isArray(pensions) ? pensions : []
+  const assetList = Array.isArray(assets) ? assets : []
+  return {
+    ...input,
+    ...(Array.isArray(pensions)
+      ? { pensions: pensionList.map((entry, index) => withDefaultColorIndex(entry, index)) }
+      : {}),
+    ...(Array.isArray(assets)
+      ? {
+          assets: assetList.map((entry, index) =>
+            withDefaultColorIndex(entry, pensionList.length + index),
+          ),
+        }
+      : {}),
+  }
+}
+
+function withDefaultColorIndex(entry: unknown, index: number): unknown {
+  if (typeof entry !== 'object' || entry === null) return entry
+  const record = entry as Record<string, unknown>
+  return 'colorIndex' in record ? record : { ...record, colorIndex: index }
 }
 
 function toPlanIssue(issue: z.ZodIssue, input: unknown): PlanIssue {

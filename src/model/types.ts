@@ -39,6 +39,13 @@ export type Pension = {
   startAge?: number
   /** Yearly increase of the payment, fraction p.a. Often 0. */
   annualIncrease: number
+  /**
+   * Slot into the shared colour palette (`seriesColor` in `theme.ts`), assigned
+   * once when the entry is created. Deliberately independent of the entry's
+   * position in `pensions` — colour follows the entity, not its rank, so
+   * dragging an entry to reorder the list must never change its colour.
+   */
+  colorIndex: number
 }
 
 /** A pot of capital that accumulates until retirement and is then drawn down. */
@@ -54,6 +61,8 @@ export type Asset = {
   monthlyContribution: number
   /** Expected return during the withdrawal phase, fraction p.a. */
   annualReturnInRetirement: number
+  /** Same colour-slot convention as `Pension.colorIndex`, in the same shared sequence. */
+  colorIndex: number
 }
 
 /**
