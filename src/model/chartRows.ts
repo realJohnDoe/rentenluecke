@@ -1,5 +1,5 @@
 import type { Plan, Projection } from './types'
-import { seriesColor } from '../theme'
+import { otherSeriesColor, seriesColor, SERIES_SLOT_COUNT } from '../theme'
 import { de } from '../i18n/de'
 
 /** A projection point flattened into the shape Recharts wants. */
@@ -12,6 +12,10 @@ export type ChartRow = {
   /** Total for the inactive scenario, drawn as a dashed outline. */
   ghostAssetValue: number
   ghostIncome: number
+  /** Sum of every asset beyond the eight-colour palette. See `isOverflow`. */
+  otherAssetValue: number
+  /** Sum of every pension and withdrawal beyond the eight-colour palette. */
+  otherIncome: number
 } & Record<string, number>
 
 /** One stacked band in a chart panel. */
@@ -30,7 +34,11 @@ export const pensionKey = (id: string) => `pension:${id}`
  * plan and value mode, only the contribution behaviour differs, so it always
  * has exactly as many points as `projection`.
  */
-export function toChartRows(projection: Projection, ghostProjection?: Projection): ChartRow[] {
+export function toChartRows(
+  plan: Plan,
+  projection: Projection,
+  ghostProjection?: Projection,
+): ChartRow[] {
   return projection.points.map((point, index) => {
     const ghostPoint = ghostProjection?.points[index]
     const row: ChartRow = {
@@ -41,14 +49,44 @@ export function toChartRows(projection: Projection, ghostProjection?: Projection
       totalAssetValue: point.totalAssetValue,
       ghostAssetValue: ghostPoint?.totalAssetValue ?? 0,
       ghostIncome: ghostPoint?.totalMonthlyIncome ?? 0,
+      otherAssetValue: 0,
+      otherIncome: 0,
     }
-    for (const [id, value] of Object.entries(point.assetValues)) row[assetValueKey(id)] = value
+    for (const [id, value] of Object.entries(point.assetValues)) {
+      if (isOverflow(plan, 'asset', id)) row.otherAssetValue += value
+      else row[assetValueKey(id)] = value
+    }
     for (const [id, value] of Object.entries(point.withdrawalIncome)) {
-      row[withdrawalKey(id)] = value
+      if (isOverflow(plan, 'asset', id)) row.otherIncome += value
+      else row[withdrawalKey(id)] = value
     }
-    for (const [id, value] of Object.entries(point.pensionIncome)) row[pensionKey(id)] = value
+    for (const [id, value] of Object.entries(point.pensionIncome)) {
+      if (isOverflow(plan, 'pension', id)) row.otherIncome += value
+      else row[pensionKey(id)] = value
+    }
     return row
   })
+}
+
+/**
+ * Position in the shared pension+asset colour sequence: pensions first, in
+ * their fixed order in the plan, then assets. Stable across enabling and
+ * disabling an entry, so a colour always names the same entity.
+ */
+function colorIndex(plan: Plan, kind: 'pension' | 'asset', id: string): number {
+  if (kind === 'pension') return plan.pensions.findIndex((pension) => pension.id === id)
+  return plan.pensions.length + plan.assets.findIndex((asset) => asset.id === id)
+}
+
+/**
+ * Whether an entity falls outside the eight-colour palette. Pensions and
+ * assets share one colour sequence (see `colorIndex`), so an eighth pension
+ * already exhausts it — any entity after that folds into the "Other" band
+ * (`otherIncome` / `otherAssetValue`) instead of reusing a hue that already
+ * names someone else.
+ */
+function isOverflow(plan: Plan, kind: 'pension' | 'asset', id: string): boolean {
+  return colorIndex(plan, kind, id) >= SERIES_SLOT_COUNT
 }
 
 /**
@@ -57,15 +95,17 @@ export function toChartRows(projection: Projection, ghostProjection?: Projection
  * Disabled entries keep their slot: colour follows the entity, not its rank —
  * used both by the charts (only enabled entries) and by the input cards (every
  * entry, so a disabled one still shows the swatch it would get if re-enabled).
+ * Past the eighth entity there is no slot left to keep, so every later entry
+ * shares `otherSeriesColor` — the same colour the chart groups it under.
  */
 export function pensionColor(plan: Plan, id: string): string {
-  const index = plan.pensions.findIndex((pension) => pension.id === id)
-  return seriesColor(index)
+  const index = colorIndex(plan, 'pension', id)
+  return index < SERIES_SLOT_COUNT ? seriesColor(index) : otherSeriesColor
 }
 
 export function assetColor(plan: Plan, id: string): string {
-  const index = plan.assets.findIndex((asset) => asset.id === id)
-  return seriesColor(plan.pensions.length + index)
+  const index = colorIndex(plan, 'asset', id)
+  return index < SERIES_SLOT_COUNT ? seriesColor(index) : otherSeriesColor
 }
 
 /**
@@ -82,7 +122,7 @@ export type IncomeSeries = {
 
 export function buildSeries(plan: Plan): { assets: ChartSeries[]; income: IncomeSeries } {
   const pensions = plan.pensions
-    .filter((pension) => pension.enabled)
+    .filter((pension) => pension.enabled && !isOverflow(plan, 'pension', pension.id))
     .map((pension) => ({
       key: pensionKey(pension.id),
       name: pension.name,
@@ -90,7 +130,7 @@ export function buildSeries(plan: Plan): { assets: ChartSeries[]; income: Income
     }))
 
   const withdrawals = plan.assets
-    .filter((asset) => asset.enabled)
+    .filter((asset) => asset.enabled && !isOverflow(plan, 'asset', asset.id))
     .map((asset) => ({
       key: withdrawalKey(asset.id),
       name: de.withdrawalOf(asset.name),
@@ -98,16 +138,36 @@ export function buildSeries(plan: Plan): { assets: ChartSeries[]; income: Income
     }))
 
   const assets = plan.assets
-    .filter((asset) => asset.enabled)
+    .filter((asset) => asset.enabled && !isOverflow(plan, 'asset', asset.id))
     .map((asset) => ({
       key: assetValueKey(asset.id),
       name: asset.name,
       color: assetColor(plan, asset.id),
     }))
 
+  const hasOverflowPension = plan.pensions.some(
+    (pension) => pension.enabled && isOverflow(plan, 'pension', pension.id),
+  )
+  const hasOverflowAsset = plan.assets.some(
+    (asset) => asset.enabled && isOverflow(plan, 'asset', asset.id),
+  )
+  const otherIncome =
+    hasOverflowPension || hasOverflowAsset
+      ? [{ key: 'otherIncome', name: de.otherSeries, color: otherSeriesColor }]
+      : []
+  const otherAssets = hasOverflowAsset
+    ? [{ key: 'otherAssetValue', name: de.otherSeries, color: otherSeriesColor }]
+    : []
+
   // Pensions sit at the bottom of the income stack: they are the part that
   // cannot run out, so the layer above them reads as the part that can. That
   // split is a deliberate choice, independent of sidebar order — Charts.tsx
-  // is the one that turns each band's sidebar order into stacking order.
-  return { assets, income: { pensions, withdrawals } }
+  // is the one that turns each band's sidebar order into stacking order. The
+  // "Other" band, when present, is appended after the real withdrawals — it
+  // groups whichever entities ran out of colour slots, not a specific kind
+  // of income, but has no sidebar entry of its own to slot in elsewhere.
+  return {
+    assets: [...assets, ...otherAssets],
+    income: { pensions, withdrawals: [...withdrawals, ...otherIncome] },
+  }
 }
