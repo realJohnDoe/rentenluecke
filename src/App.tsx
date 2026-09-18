@@ -34,7 +34,7 @@ export function App() {
   // Both are view options, never part of the plan — see the "What is a Plan"
   // convention.
   const [scenario, setScenario] = useState<Scenario>('continue')
-  const [valueMode, setValueMode] = useState<ValueMode>('real')
+  const [valueMode, setValueMode] = useState<ValueMode>('nominal')
 
   // Autosave the plan only — never the view options above — debounced so
   // rapid edits (e.g. dragging a slider) don't hit localStorage every tick.

@@ -108,7 +108,19 @@ export function assetColor(plan: Plan, id: string): string {
   return index < SERIES_SLOT_COUNT ? seriesColor(index) : otherSeriesColor
 }
 
-export function buildSeries(plan: Plan): { assets: ChartSeries[]; income: ChartSeries[] } {
+/**
+ * Income series split by the two bands of the stack, in sidebar order —
+ * the order the corresponding entry list (PensionList / AssetList) shows
+ * them in, top to bottom. Kept apart rather than flattened so a consumer can
+ * reverse each band separately when it needs stacking order instead (see
+ * `Charts.tsx`): flattening first would lose the boundary between them.
+ */
+export type IncomeSeries = {
+  pensions: ChartSeries[]
+  withdrawals: ChartSeries[]
+}
+
+export function buildSeries(plan: Plan): { assets: ChartSeries[]; income: IncomeSeries } {
   const pensions = plan.pensions
     .filter((pension) => pension.enabled && !isOverflow(plan, 'pension', pension.id))
     .map((pension) => ({
@@ -148,11 +160,14 @@ export function buildSeries(plan: Plan): { assets: ChartSeries[]; income: ChartS
     : []
 
   // Pensions sit at the bottom of the income stack: they are the part that
-  // cannot run out, so the layer above them reads as the part that can. The
-  // "Other" band, when present, always comes last — it groups whichever
-  // entities ran out of colour slots, not a specific kind of income.
+  // cannot run out, so the layer above them reads as the part that can. That
+  // split is a deliberate choice, independent of sidebar order — Charts.tsx
+  // is the one that turns each band's sidebar order into stacking order. The
+  // "Other" band, when present, is appended after the real withdrawals — it
+  // groups whichever entities ran out of colour slots, not a specific kind
+  // of income, but has no sidebar entry of its own to slot in elsewhere.
   return {
     assets: [...assets, ...otherAssets],
-    income: [...pensions, ...withdrawals, ...otherIncome],
+    income: { pensions, withdrawals: [...withdrawals, ...otherIncome] },
   }
 }
