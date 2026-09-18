@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useReducer, useState } from 'react'
+import { useDeferredValue, useEffect, useMemo, useReducer, useState } from 'react'
 import { Charts } from './components/Charts'
 import { Summary } from './components/Summary'
 import { PlanForm } from './components/PlanForm'
@@ -49,21 +49,35 @@ export function App() {
     return () => clearTimeout(timeout)
   }, [plan])
 
+  // The month-by-month projection is the expensive part of a render — dragging
+  // a slider dispatches on every tick, and recomputing it synchronously on each
+  // one is what made the inputs feel unresponsive. Deferring the plan lets React
+  // keep the input itself (and its own controlled value, read from `plan`
+  // directly further down) immediately responsive while the projection and
+  // charts catch up a moment later, uninterrupted by the next keystroke or drag.
+  const deferredPlan = useDeferredValue(plan)
+
   // Both scenarios are always projected, keyed only on what actually changes
   // their result, so flipping the active scenario never recomputes either one.
-  const continueProjection = useMemo(() => project(plan, 'continue', valueMode), [plan, valueMode])
-  const stopProjection = useMemo(() => project(plan, 'stop', valueMode), [plan, valueMode])
+  const continueProjection = useMemo(
+    () => project(deferredPlan, 'continue', valueMode),
+    [deferredPlan, valueMode],
+  )
+  const stopProjection = useMemo(
+    () => project(deferredPlan, 'stop', valueMode),
+    [deferredPlan, valueMode],
+  )
 
   const projection = scenario === 'continue' ? continueProjection : stopProjection
   const ghostScenario: Scenario = scenario === 'continue' ? 'stop' : 'continue'
   const ghostProjection = scenario === 'continue' ? stopProjection : continueProjection
 
   const rows = useMemo(
-    () => toChartRows(plan, projection, ghostProjection),
-    [plan, projection, ghostProjection],
+    () => toChartRows(deferredPlan, projection, ghostProjection),
+    [deferredPlan, projection, ghostProjection],
   )
-  const series = useMemo(() => buildSeries(plan), [plan])
-  const timeline = useMemo(() => resolveTimeline(plan), [plan])
+  const series = useMemo(() => buildSeries(deferredPlan), [deferredPlan])
+  const timeline = useMemo(() => resolveTimeline(deferredPlan), [deferredPlan])
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-6 sm:px-6 sm:py-8">
