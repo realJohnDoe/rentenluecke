@@ -112,6 +112,18 @@ export function Charts({
   // stays put, since that ordering is deliberate (see buildSeries).
   const assetStackOrder = assetSeries
   const incomeStackOrder = [...incomeSeries.pensions, ...incomeSeries.withdrawals]
+  // Recharts tracks each Area/Line's stacking position in its own internal
+  // store, populated by mount/unmount effects rather than recomputed fresh
+  // from render order. Swapping in a whole new set of series in one update —
+  // importing a file, resetting the plan — replaces every id at once, and
+  // that effect ordering does not reliably reproduce declaration order (see
+  // https://github.com/recharts/recharts/blob/master/src/state/SetGraphicalItem.tsx).
+  // Keying the chart by the current set of series forces a full remount
+  // whenever that set changes, which starts the store empty and mounts
+  // everything fresh in one pass — the same clean state a page reload gets.
+  // Editing a value never changes this key, so normal typing does not remount.
+  const assetChartKey = assetStackOrder.map((series) => series.key).join('|')
+  const incomeChartKey = incomeStackOrder.map((series) => series.key).join('|')
 
   const ghostLegend = (key: string): LegendEntry => ({
     key,
@@ -137,7 +149,7 @@ export function Charts({
         height={narrow ? PANEL_HEIGHT.assets.narrow : PANEL_HEIGHT.assets.wide}
         description={spoken.assets}
       >
-        <ComposedChart data={rows} syncId={SYNC_ID} margin={CHART_MARGIN}>
+        <ComposedChart key={assetChartKey} data={rows} syncId={SYNC_ID} margin={CHART_MARGIN}>
           <CartesianGrid stroke={chartInk.grid} vertical={false} />
           <XAxis
             dataKey="age"
@@ -173,6 +185,7 @@ export function Charts({
             />
           ))}
           <Line
+            key="ghostAssetValue"
             type="monotone"
             dataKey="ghostAssetValue"
             name={ghostScenarioName}
@@ -213,7 +226,7 @@ export function Charts({
          * and synced, so repeating it on both would just be noise. */
         axisLabel={de.axisAge}
       >
-        <ComposedChart data={rows} syncId={SYNC_ID} margin={CHART_MARGIN}>
+        <ComposedChart key={incomeChartKey} data={rows} syncId={SYNC_ID} margin={CHART_MARGIN}>
           <defs>
             <pattern
               id={GAP_PATTERN_ID}
@@ -286,6 +299,7 @@ export function Charts({
           ))}
           {/* Stacked on top of the income bands, so it reaches exactly the target. */}
           <Area
+            key="gap"
             type="monotone"
             dataKey="gap"
             name={de.gap}
@@ -296,6 +310,7 @@ export function Charts({
             isAnimationActive={false}
           />
           <Line
+            key="target"
             type="monotone"
             dataKey="target"
             name={de.target}
@@ -305,6 +320,7 @@ export function Charts({
             isAnimationActive={false}
           />
           <Line
+            key="ghostIncome"
             type="monotone"
             dataKey="ghostIncome"
             name={ghostScenarioName}
