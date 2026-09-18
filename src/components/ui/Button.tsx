@@ -26,7 +26,8 @@ export function Button({ onClick, children, width = 'auto', tone = 'default', re
       type="button"
       onClick={onClick}
       className={`inline-flex min-h-10 items-center justify-center rounded-lg border
-        bg-surface px-3 py-2 text-sm font-medium transition-colors hover:bg-raised
+        bg-surface px-3 py-2 text-sm font-medium transition duration-150 hover:bg-raised
+        active:scale-[0.98]
         ${
           tone === 'critical'
             ? 'border-critical text-critical'

@@ -78,7 +78,7 @@ function Figure({
       <dt className="text-xs leading-snug text-ink-muted">{label}</dt>
       <dd
         className={`self-end text-xl font-semibold tabular-nums tracking-tight
-          ${highlight ? 'text-critical' : ''}`}
+          transition-colors ${highlight ? 'text-critical' : ''}`}
       >
         {value}
         {note ? <span className="ml-1 text-xs font-normal text-ink-muted">{note}</span> : null}

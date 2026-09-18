@@ -33,7 +33,7 @@ export function IconButton({
       aria-expanded={expanded}
       aria-controls={controls}
       className={`inline-flex size-10 shrink-0 items-center justify-center rounded-lg
-        transition-colors hover:bg-raised
+        transition duration-150 hover:bg-raised active:scale-95
         ${tone === 'critical' ? 'text-critical' : 'text-ink-muted hover:text-ink'}`}
     >
       {children}

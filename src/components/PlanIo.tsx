@@ -77,8 +77,8 @@ export function PlanIo({ plan, dispatch }: Props) {
         <div
           role="group"
           aria-label={de.resetPlanPrompt}
-          className="flex flex-wrap items-center gap-2 rounded-lg border border-hairline
-            bg-surface px-3 py-2 sm:gap-3"
+          className="flex animate-rise-in flex-wrap items-center gap-2 rounded-lg
+            border border-hairline bg-surface px-3 py-2 sm:gap-3"
         >
           <span className="basis-full text-xs text-ink-secondary sm:basis-auto">
             {de.resetPlanPrompt}
@@ -101,7 +101,8 @@ export function PlanIo({ plan, dispatch }: Props) {
 
       {importIssues.length > 0 ? (
         <div
-          className="rounded-lg border border-critical bg-surface px-3 py-2 text-xs text-critical"
+          className="animate-rise-in rounded-lg border border-critical bg-surface px-3 py-2
+            text-xs text-critical"
           role="alert"
         >
           <p className="font-medium">{de.importErrorTitle}</p>
