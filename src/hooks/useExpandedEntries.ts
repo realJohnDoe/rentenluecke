@@ -1,27 +1,28 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 /**
- * Tracks which entries in a list are expanded, keyed by id.
+ * Tracks which entries in a list are expanded, keyed by id. Everything starts
+ * collapsed — including a freshly loaded or imported plan, however many
+ * entries it has.
  *
- * Newly added entries (ids not present on the previous render) start expanded
- * so their defaults are immediately editable — the reason this needs to watch
- * `ids` at all rather than being plain `useState`. Pensions and assets behave
- * identically here, so the rule lives in one place.
+ * A newly added entry is the one exception: it should open immediately so its
+ * defaults are editable without an extra tap. The signal for that is set by
+ * the caller (see `expandAfterAdd`) rather than derived from the list growing,
+ * for the same reason `useFocusOnAdd` takes an explicit signal instead of
+ * watching the list's length — importing a plan grows the list too, and must
+ * not expand it. The new entry is always appended, so the id to expand is
+ * simply the last one once the signal fires.
  */
 export function useExpandedEntries(ids: string[]) {
   const [expandedIds, setExpandedIds] = useState<Set<string>>(() => new Set())
-  const knownIds = useRef(new Set(ids))
+  const [pendingAdd, setPendingAdd] = useState(false)
 
-  // `ids` is a fresh array on every render, so the effect is keyed on its
-  // contents instead. Ids can come from an imported file, so they are compared
-  // as JSON rather than joined on a separator they might contain.
-  const idKey = JSON.stringify(ids)
   useEffect(() => {
-    const currentIds = JSON.parse(idKey) as string[]
-    const added = currentIds.filter((id) => !knownIds.current.has(id))
-    if (added.length > 0) setExpandedIds((prev) => new Set([...prev, ...added]))
-    knownIds.current = new Set(currentIds)
-  }, [idKey])
+    if (!pendingAdd) return
+    setPendingAdd(false)
+    const addedId = ids[ids.length - 1]
+    if (addedId !== undefined) setExpandedIds((prev) => new Set(prev).add(addedId))
+  }, [pendingAdd, ids])
 
   const toggle = (id: string) =>
     setExpandedIds((prev) => {
@@ -31,5 +32,9 @@ export function useExpandedEntries(ids: string[]) {
       return next
     })
 
-  return { isExpanded: (id: string) => expandedIds.has(id), toggle }
+  return {
+    isExpanded: (id: string) => expandedIds.has(id),
+    toggle,
+    expandAfterAdd: () => setPendingAdd(true),
+  }
 }
