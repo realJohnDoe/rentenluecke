@@ -114,8 +114,8 @@ export function assetColor(plan: Plan, id: string): string {
  * Income series split by the two bands of the stack, in sidebar order —
  * the order the corresponding entry list (PensionList / AssetList) shows
  * them in, top to bottom. Kept apart rather than flattened so a consumer can
- * reverse each band separately when it needs stacking order instead (see
- * `Charts.tsx`): flattening first would lose the boundary between them.
+ * turn each band into stacking order separately (see `Charts.tsx`):
+ * flattening first would lose the boundary between them.
  */
 export type IncomeSeries = {
   pensions: ChartSeries[]

@@ -106,15 +106,12 @@ export function Charts({
   // Sidebar order, for the legend and tooltip — same as PensionList/AssetList.
   const incomeSeriesFlat = [...incomeSeries.pensions, ...incomeSeries.withdrawals]
   // Recharts stacks Areas bottom-up in declaration order, so the first one
-  // declared ends up nearest the axis and the last ends up on top. To make
-  // that top-to-bottom reading match the sidebar's, each band is declared in
-  // the reverse of its sidebar order; the pensions/withdrawals split itself
+  // declared ends up nearest the axis. Declaring each band in its sidebar
+  // order therefore puts the sidebar's first entry at the bottom of that band
+  // and its last entry at the top; the pensions/withdrawals split itself
   // stays put, since that ordering is deliberate (see buildSeries).
-  const assetStackOrder = [...assetSeries].reverse()
-  const incomeStackOrder = [
-    ...[...incomeSeries.pensions].reverse(),
-    ...[...incomeSeries.withdrawals].reverse(),
-  ]
+  const assetStackOrder = assetSeries
+  const incomeStackOrder = [...incomeSeries.pensions, ...incomeSeries.withdrawals]
 
   const ghostLegend = (key: string): LegendEntry => ({
     key,
