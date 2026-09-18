@@ -63,6 +63,8 @@ export const de = {
   gap: 'Rentenlücke',
   totalIncome: 'Gesamtversorgung',
   withdrawalOf: (name: string) => `Entnahme ${name}`,
+  /** Groups every entry beyond the chart's eight colour slots into one band. */
+  otherSeries: 'Weitere',
 
   // Key figures
   summaryTitle: 'Auf einen Blick',

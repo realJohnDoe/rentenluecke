@@ -14,11 +14,21 @@ const SERIES_SLOTS = [
   'var(--series-8)',
 ] as const
 
-/** Number of distinct colours available before slots have to be reused. */
+/** Number of distinct colours available before entities have to be grouped. */
 export const SERIES_SLOT_COUNT = SERIES_SLOTS.length
 
+/**
+ * Colour for the ninth-and-later entity. A generated hue would silently repeat
+ * one already in use — indistinguishable from whichever entity holds that slot
+ * — so overflow entities are folded into a single, explicitly ungrouped "Other"
+ * band instead. See `chartRows.ts`.
+ */
+export const otherSeriesColor = 'var(--text-muted)'
+
+/** `index` must be below `SERIES_SLOT_COUNT` — callers route anything at or
+ * beyond it to `otherSeriesColor` rather than here. */
 export function seriesColor(index: number): string {
-  return SERIES_SLOTS[index % SERIES_SLOT_COUNT] as string
+  return SERIES_SLOTS[index] as string
 }
 
 export const chartInk = {

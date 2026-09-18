@@ -68,6 +68,23 @@ describe('buildSeries', () => {
     expect(assets.map((s) => s.key)).toEqual(['assetValue:a1', 'assetValue:a3'])
     expect(income.withdrawals.map((s) => s.key)).toEqual(['withdrawal:a1', 'withdrawal:a3'])
   })
+
+  it('folds pensions and assets beyond the eight-colour palette into one "Other" band', () => {
+    const plan: Plan = {
+      ...basePlan,
+      pensions: Array.from({ length: 8 }, (_, i) => pension({ id: `p${i}`, colorIndex: i })),
+      assets: [asset({ id: 'a1', colorIndex: 8 })],
+    }
+    const { assets, income } = buildSeries(plan)
+    // The lone asset's colorIndex falls outside the shared 8-slot sequence
+    // (pensions already fill it), so it never gets its own colour in either
+    // panel — it folds into the single "Other" band instead.
+    expect(assets.map((s) => s.key)).toEqual(['otherAssetValue'])
+    expect(income.pensions).toHaveLength(8)
+    expect(income.withdrawals.map((s) => s.key)).toEqual(['otherIncome'])
+    expect(new Set(income.pensions.map((s) => s.color)).size).toBe(8)
+    expect(income.pensions.every((s) => s.color !== income.withdrawals[0]!.color)).toBe(true)
+  })
 })
 
 /**
