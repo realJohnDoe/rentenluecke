@@ -23,7 +23,7 @@ type Props = {
 export function AssetList({ plan, dispatch }: Props) {
   const { listRef, focusAfterAdd } = useFocusOnAdd()
   const assetIds = plan.assets.map((asset) => asset.id)
-  const { isExpanded, toggle } = useExpandedEntries(assetIds)
+  const { isExpanded, toggle, expandAfterAdd } = useExpandedEntries(assetIds)
   const { sensors, handleDragEnd } = useReorder(assetIds, (ids) =>
     dispatch({ type: 'reorderAssets', ids }),
   )
@@ -54,6 +54,7 @@ export function AssetList({ plan, dispatch }: Props) {
         <Button
           onClick={() => {
             focusAfterAdd()
+            expandAfterAdd()
             dispatch({ type: 'addAsset' })
           }}
         >

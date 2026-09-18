@@ -23,7 +23,7 @@ type Props = {
 export function PensionList({ plan, dispatch }: Props) {
   const { listRef, focusAfterAdd } = useFocusOnAdd()
   const pensionIds = plan.pensions.map((pension) => pension.id)
-  const { isExpanded, toggle } = useExpandedEntries(pensionIds)
+  const { isExpanded, toggle, expandAfterAdd } = useExpandedEntries(pensionIds)
   const { sensors, handleDragEnd } = useReorder(pensionIds, (ids) =>
     dispatch({ type: 'reorderPensions', ids }),
   )
@@ -55,6 +55,7 @@ export function PensionList({ plan, dispatch }: Props) {
         <Button
           onClick={() => {
             focusAfterAdd()
+            expandAfterAdd()
             dispatch({ type: 'addPension' })
           }}
         >
