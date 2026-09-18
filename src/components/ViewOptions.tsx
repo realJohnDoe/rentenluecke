@@ -34,8 +34,8 @@ export function ViewOptions({ scenario, onScenarioChange, valueMode, onValueMode
         value={valueMode}
         onChange={onValueModeChange}
         options={[
-          { value: 'real', label: de.valueModeReal },
           { value: 'nominal', label: de.valueModeNominal },
+          { value: 'real', label: de.valueModeReal },
         ]}
       />
     </div>
