@@ -68,7 +68,19 @@ export function assetColor(plan: Plan, id: string): string {
   return seriesColor(plan.pensions.length + index)
 }
 
-export function buildSeries(plan: Plan): { assets: ChartSeries[]; income: ChartSeries[] } {
+/**
+ * Income series split by the two bands of the stack, in sidebar order —
+ * the order the corresponding entry list (PensionList / AssetList) shows
+ * them in, top to bottom. Kept apart rather than flattened so a consumer can
+ * reverse each band separately when it needs stacking order instead (see
+ * `Charts.tsx`): flattening first would lose the boundary between them.
+ */
+export type IncomeSeries = {
+  pensions: ChartSeries[]
+  withdrawals: ChartSeries[]
+}
+
+export function buildSeries(plan: Plan): { assets: ChartSeries[]; income: IncomeSeries } {
   const pensions = plan.pensions
     .filter((pension) => pension.enabled)
     .map((pension) => ({
@@ -94,6 +106,8 @@ export function buildSeries(plan: Plan): { assets: ChartSeries[]; income: ChartS
     }))
 
   // Pensions sit at the bottom of the income stack: they are the part that
-  // cannot run out, so the layer above them reads as the part that can.
-  return { assets, income: [...pensions, ...withdrawals] }
+  // cannot run out, so the layer above them reads as the part that can. That
+  // split is a deliberate choice, independent of sidebar order — Charts.tsx
+  // is the one that turns each band's sidebar order into stacking order.
+  return { assets, income: { pensions, withdrawals } }
 }

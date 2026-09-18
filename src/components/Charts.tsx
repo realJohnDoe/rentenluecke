@@ -11,7 +11,7 @@ import {
   YAxis,
 } from 'recharts'
 import type { ReactNode } from 'react'
-import type { ChartRow, ChartSeries } from '../model/chartRows'
+import type { ChartRow, ChartSeries, IncomeSeries } from '../model/chartRows'
 import type { Timeline } from '../model/finance'
 import type { ValueMode } from '../model/types'
 import { Card } from './ui/Card'
@@ -75,7 +75,7 @@ const PANEL_HEIGHT = {
 type Props = {
   rows: ChartRow[]
   assetSeries: ChartSeries[]
-  incomeSeries: ChartSeries[]
+  incomeSeries: IncomeSeries
   timeline: Timeline
   valueMode: ValueMode
   /** Name of the inactive scenario, shown on the dashed ghost line. */
@@ -102,6 +102,19 @@ export function Charts({
   )
   const assetAxis = axisScale(assetMax, narrow)
   const incomeAxis = axisScale(incomeMax, narrow)
+
+  // Sidebar order, for the legend and tooltip — same as PensionList/AssetList.
+  const incomeSeriesFlat = [...incomeSeries.pensions, ...incomeSeries.withdrawals]
+  // Recharts stacks Areas bottom-up in declaration order, so the first one
+  // declared ends up nearest the axis and the last ends up on top. To make
+  // that top-to-bottom reading match the sidebar's, each band is declared in
+  // the reverse of its sidebar order; the pensions/withdrawals split itself
+  // stays put, since that ordering is deliberate (see buildSeries).
+  const assetStackOrder = [...assetSeries].reverse()
+  const incomeStackOrder = [
+    ...[...incomeSeries.pensions].reverse(),
+    ...[...incomeSeries.withdrawals].reverse(),
+  ]
 
   const ghostLegend = (key: string): LegendEntry => ({
     key,
@@ -148,7 +161,7 @@ export function Charts({
             tickFormatter={assetAxis.format}
           />
           <RetirementMarker age={timeline.retirementAge} withLabel={!narrow} />
-          {assetSeries.map((series) => (
+          {assetStackOrder.map((series) => (
             <Area
               key={series.key}
               type="monotone"
@@ -191,7 +204,7 @@ export function Charts({
         title={de.incomePanelTitle}
         hint={de.incomePanelHint}
         unit={de.axisUnitPerMonth(incomeAxis.unit)}
-        series={incomeSeries}
+        series={incomeSeriesFlat}
         extraLegend={[
           { key: 'target', name: targetLegendName, color: chartInk.primary, kind: 'line' },
           { key: 'gap', name: de.gap, color: chartInk.gap, kind: 'hatch' },
@@ -260,7 +273,7 @@ export function Charts({
               label={{ value: de.accumulationPhase, fill: chartInk.muted, fontSize: 12 }}
             />
           ) : null}
-          {incomeSeries.map((series) => (
+          {incomeStackOrder.map((series) => (
             <Area
               key={series.key}
               type="monotone"
@@ -310,7 +323,7 @@ export function Charts({
               <ChartTooltip
                 {...asTooltipProps(props)}
                 rows={rows}
-                series={incomeSeries}
+                series={incomeSeriesFlat}
                 totalKey="totalIncome"
                 totalLabel={de.totalIncome}
                 showTargetAndGap
