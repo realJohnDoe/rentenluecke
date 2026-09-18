@@ -10,6 +10,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
+import { memo } from 'react'
 import type { ReactNode } from 'react'
 import type { ChartRow, ChartSeries, IncomeSeries } from '../model/chartRows'
 import type { Timeline } from '../model/finance'
@@ -82,7 +83,14 @@ type Props = {
   ghostScenarioName: string
 }
 
-export function Charts({
+/**
+ * Memoized so that `App`'s `useDeferredValue(plan)` actually buys anything: the
+ * App component itself still re-renders synchronously on every keystroke and
+ * slider tick (that's what keeps the inputs responsive), and without `memo`
+ * here React would re-run this whole expensive Recharts tree on every one of
+ * those renders too, even while `rows`/`assetSeries`/etc. are unchanged.
+ */
+export const Charts = memo(function Charts({
   rows,
   assetSeries,
   incomeSeries,
@@ -347,7 +355,7 @@ export function Charts({
       </Panel>
     </div>
   )
-}
+})
 
 type LegendEntry = ChartSeries & { kind?: 'area' | 'line' | 'hatch' | 'dashed' }
 
