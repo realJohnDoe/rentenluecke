@@ -86,15 +86,11 @@ export function EntryCard({
     >
       <div className="flex items-center gap-2 p-2 pl-3">
         {dragHandle}
-        <span
-          aria-hidden
-          className="inline-block size-3 shrink-0 rounded-sm transition-opacity"
-          style={{ background: color, opacity: enabled ? 1 : 0.35 }}
-        />
         <Switch
           checked={enabled}
           onChange={onEnabledChange}
           label={`${de.enabled}: ${name || namePlaceholder}`}
+          color={color}
         />
         <input
           type="text"
@@ -103,8 +99,8 @@ export function EntryCard({
           placeholder={namePlaceholder}
           aria-label={namePlaceholder}
           className={`h-10 min-w-0 flex-1 rounded-lg border border-transparent bg-transparent px-3
-            text-base font-medium transition-colors hover:border-hairline hover:bg-surface
-            focus-visible:border-hairline focus-visible:bg-surface sm:text-sm
+            text-sm font-medium transition-colors hover:border-hairline hover:bg-surface
+            focus-visible:border-hairline focus-visible:bg-surface
             ${enabled ? '' : 'text-ink-muted font-normal'}`}
         />
         <IconButton
