@@ -1,5 +1,5 @@
 import { useId } from 'react'
-import type { ReactNode } from 'react'
+import type { CSSProperties, ReactNode, Ref } from 'react'
 import { IconButton } from './ui/IconButton'
 import { Collapsible } from './ui/Collapsible'
 import { de } from '../i18n/de'
@@ -16,6 +16,17 @@ type Props = {
   onToggle: () => void
   /** One-line description of the fields hidden in `children`, shown while collapsed. */
   summary: string
+  /**
+   * The drag handle button, already wired to whatever drag-and-drop library
+   * the list uses (see `PensionCard`/`AssetCard`) — a fully-built element
+   * rather than a prop bag, so this component stays library-agnostic.
+   */
+  dragHandle: ReactNode
+  /** Ref for the `<li>` itself, so the drag library can measure and move it. */
+  itemRef: Ref<HTMLLIElement>
+  /** Live transform/transition while a drag is in progress. */
+  itemStyle?: CSSProperties
+  isDragging?: boolean
   children: ReactNode
 }
 
@@ -46,6 +57,10 @@ export function EntryCard({
   expanded,
   onToggle,
   summary,
+  dragHandle,
+  itemRef,
+  itemStyle,
+  isDragging = false,
   children,
 }: Props) {
   const detailsId = useId()
@@ -56,9 +71,20 @@ export function EntryCard({
      * the viewport's. On a wide screen this card sits in a 22rem sidebar, where
      * a viewport-driven `sm:grid-cols-2` gave two 136px columns and wrapped
      * every hint over six lines.
+     *
+     * `bg-surface` matches the card's parent (see `ui/Card.tsx`) so it is
+     * invisible at rest, but keeps the row opaque while it is lifted above its
+     * siblings during a drag — without it the translated card would show
+     * whatever sits behind it through its gaps.
      */
-    <li className="@container rounded-lg border border-hairline">
+    <li
+      ref={itemRef}
+      style={itemStyle}
+      className={`@container rounded-lg border border-hairline bg-surface
+        ${isDragging ? 'relative z-10 shadow-lg' : ''}`}
+    >
       <div className="flex items-center gap-2 p-2 pl-3">
+        {dragHandle}
         <span
           aria-hidden
           className="inline-block size-3 shrink-0 rounded-sm transition-opacity"
@@ -120,6 +146,20 @@ export function EntryCard({
         </button>
       </Collapsible>
     </li>
+  )
+}
+
+/** Six-dot grip, the drag handle's icon — shared by `PensionCard` and `AssetCard`. */
+export function GripIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
+      <circle cx="5" cy="3" r="1.3" fill="currentColor" />
+      <circle cx="11" cy="3" r="1.3" fill="currentColor" />
+      <circle cx="5" cy="8" r="1.3" fill="currentColor" />
+      <circle cx="11" cy="8" r="1.3" fill="currentColor" />
+      <circle cx="5" cy="13" r="1.3" fill="currentColor" />
+      <circle cx="11" cy="13" r="1.3" fill="currentColor" />
+    </svg>
   )
 }
 

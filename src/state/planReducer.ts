@@ -14,13 +14,21 @@ export type PlanAction =
   | { type: 'addPension' }
   | { type: 'updatePension'; id: string; patch: Partial<Omit<Pension, 'id'>> }
   | { type: 'removePension'; id: string }
+  | { type: 'reorderPensions'; ids: string[] }
   | { type: 'addAsset' }
   | { type: 'updateAsset'; id: string; patch: Partial<Omit<Asset, 'id'>> }
   | { type: 'removeAsset'; id: string }
+  | { type: 'reorderAssets'; ids: string[] }
   | { type: 'replacePlan'; plan: Plan }
   | { type: 'resetPlan' }
 
-function newPension(): Pension {
+/** Next free colour slot, across pensions and assets together — see `Pension.colorIndex`. */
+function nextColorIndex(plan: Plan): number {
+  const used = [...plan.pensions, ...plan.assets].map((entry) => entry.colorIndex)
+  return used.length === 0 ? 0 : Math.max(...used) + 1
+}
+
+function newPension(plan: Plan): Pension {
   return {
     id: crypto.randomUUID(),
     name: '',
@@ -28,10 +36,11 @@ function newPension(): Pension {
     monthlyIfStopped: 0,
     monthlyIfContinued: 0,
     annualIncrease: 0,
+    colorIndex: nextColorIndex(plan),
   }
 }
 
-function newAsset(): Asset {
+function newAsset(plan: Plan): Asset {
   return {
     id: crypto.randomUUID(),
     name: '',
@@ -40,7 +49,19 @@ function newAsset(): Asset {
     annualReturn: 0,
     monthlyContribution: 0,
     annualReturnInRetirement: 0,
+    colorIndex: nextColorIndex(plan),
   }
+}
+
+/**
+ * Reorders `entries` to match `ids` — the shape a drag-and-drop reorder
+ * produces. Falls back to the untouched list if `ids` does not name exactly
+ * the entries already present, which should not happen in practice.
+ */
+function reorder<T extends { id: string }>(entries: T[], ids: string[]): T[] {
+  const byId = new Map(entries.map((entry) => [entry.id, entry]))
+  const reordered = ids.map((id) => byId.get(id)).filter((entry): entry is T => entry !== undefined)
+  return reordered.length === entries.length ? reordered : entries
 }
 
 /**
@@ -54,7 +75,7 @@ export function planReducer(plan: Plan, action: PlanAction): Plan {
       return { ...plan, [action.field]: action.value }
 
     case 'addPension':
-      return { ...plan, pensions: [...plan.pensions, newPension()] }
+      return { ...plan, pensions: [...plan.pensions, newPension(plan)] }
 
     case 'updatePension':
       return {
@@ -67,8 +88,11 @@ export function planReducer(plan: Plan, action: PlanAction): Plan {
     case 'removePension':
       return { ...plan, pensions: plan.pensions.filter((pension) => pension.id !== action.id) }
 
+    case 'reorderPensions':
+      return { ...plan, pensions: reorder(plan.pensions, action.ids) }
+
     case 'addAsset':
-      return { ...plan, assets: [...plan.assets, newAsset()] }
+      return { ...plan, assets: [...plan.assets, newAsset(plan)] }
 
     case 'updateAsset':
       return {
@@ -80,6 +104,9 @@ export function planReducer(plan: Plan, action: PlanAction): Plan {
 
     case 'removeAsset':
       return { ...plan, assets: plan.assets.filter((asset) => asset.id !== action.id) }
+
+    case 'reorderAssets':
+      return { ...plan, assets: reorder(plan.assets, action.ids) }
 
     case 'replacePlan':
       return action.plan

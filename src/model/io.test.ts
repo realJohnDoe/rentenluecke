@@ -34,4 +34,15 @@ describe('serialisePlan / deserialisePlan', () => {
   it('serialises neither scenario nor valueMode, which are view options only', () => {
     expect(serialisePlan(defaultPlan)).not.toMatch(/scenario|valueMode/i)
   })
+
+  it('fills in colorIndex for a plan exported before that field existed, preserving colours', () => {
+    const legacy = {
+      ...defaultPlan,
+      pensions: defaultPlan.pensions.map(({ colorIndex: _colorIndex, ...rest }) => rest),
+      assets: defaultPlan.assets.map(({ colorIndex: _colorIndex, ...rest }) => rest),
+    }
+    const result = deserialisePlan(stringifyYaml(legacy))
+    expect(result.ok).toBe(true)
+    expect(result.ok && result.plan).toEqual(defaultPlan)
+  })
 })

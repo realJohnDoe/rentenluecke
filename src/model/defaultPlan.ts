@@ -19,6 +19,7 @@ export const defaultPlan: Plan = {
       monthlyIfStopped: 750,
       monthlyIfContinued: 1600,
       annualIncrease: 0.01,
+      colorIndex: 0,
     },
     {
       id: 'betriebsrente',
@@ -27,6 +28,7 @@ export const defaultPlan: Plan = {
       monthlyIfStopped: 120,
       monthlyIfContinued: 300,
       annualIncrease: 0,
+      colorIndex: 1,
     },
   ],
   assets: [
@@ -38,6 +40,7 @@ export const defaultPlan: Plan = {
       annualReturn: 0.06,
       monthlyContribution: 250,
       annualReturnInRetirement: 0.03,
+      colorIndex: 2,
     },
     {
       id: 'tagesgeld',
@@ -47,6 +50,7 @@ export const defaultPlan: Plan = {
       annualReturn: 0.02,
       monthlyContribution: 50,
       annualReturnInRetirement: 0.02,
+      colorIndex: 3,
     },
   ],
 }

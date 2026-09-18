@@ -54,18 +54,20 @@ export function toChartRows(projection: Projection, ghostProjection?: Projection
 /**
  * Colour slots are handed out across pensions and assets together, so an asset
  * keeps one identity in both panels and never shares a hue with a pension.
- * Disabled entries keep their slot: colour follows the entity, not its rank —
- * used both by the charts (only enabled entries) and by the input cards (every
- * entry, so a disabled one still shows the swatch it would get if re-enabled).
+ * Each entry's slot is `colorIndex`, assigned once at creation: colour follows
+ * the entity, not its rank, so disabling an entry or dragging it to a new spot
+ * in the list never changes its colour — used both by the charts (only
+ * enabled entries) and by the input cards (every entry, so a disabled one
+ * still shows the swatch it would get if re-enabled).
  */
 export function pensionColor(plan: Plan, id: string): string {
-  const index = plan.pensions.findIndex((pension) => pension.id === id)
-  return seriesColor(index)
+  const pension = plan.pensions.find((candidate) => candidate.id === id)
+  return seriesColor(pension?.colorIndex ?? 0)
 }
 
 export function assetColor(plan: Plan, id: string): string {
-  const index = plan.assets.findIndex((asset) => asset.id === id)
-  return seriesColor(plan.pensions.length + index)
+  const asset = plan.assets.find((candidate) => candidate.id === id)
+  return seriesColor(asset?.colorIndex ?? 0)
 }
 
 /**
