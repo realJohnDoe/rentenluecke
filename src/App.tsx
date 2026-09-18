@@ -59,8 +59,8 @@ export function App() {
   const ghostProjection = scenario === 'continue' ? stopProjection : continueProjection
 
   const rows = useMemo(
-    () => toChartRows(projection, ghostProjection),
-    [projection, ghostProjection],
+    () => toChartRows(plan, projection, ghostProjection),
+    [plan, projection, ghostProjection],
   )
   const series = useMemo(() => buildSeries(plan), [plan])
   const timeline = useMemo(() => resolveTimeline(plan), [plan])
