@@ -43,8 +43,8 @@ together (`buildSeries` in `src/model/chartRows.ts`), so an entry keeps one
 identity in both panels even when others are disabled. Never introduce a new
 colour; never cycle slots. Never add a second y-axis to a panel.
 
-**Definition of done for every PR.** `npm run typecheck`, `npm test` and
-`npm run build` all pass, **and** you have seen the page render — see *Seeing the
+**Definition of done for every PR.** `pnpm run typecheck`, `pnpm test` and
+`pnpm run build` all pass, **and** you have seen the page render — see *Seeing the
 page* below. If you could not render it, say so plainly in the PR description
 rather than claiming you looked.
 
@@ -94,7 +94,7 @@ file will not run.
 
 ## Seeing the page
 
-`npm run dev` serves at `http://localhost:5173/`. `npm run preview` serves the
+`pnpm run dev` serves at `http://localhost:5173/`. `pnpm run preview` serves the
 production build at `http://localhost:4173/rentenluecke/` — note the subpath.
 
 If your environment has a browser, drive it with Playwright and screenshot at
@@ -223,7 +223,7 @@ Make the two view options switchable and show the other scenario as a ghost.
 
 ### Tasks
 
-- [x] `npm install zod yaml` (runtime dependencies).
+- [x] `pnpm install zod yaml` (runtime dependencies).
 - [x] **`src/model/schema.ts`** — a zod schema mirroring `Plan`, with `version`
   literal `1`. Export
 
