@@ -3,11 +3,7 @@ import type { Asset, Pension, Plan } from '../model/types'
 
 /** The scalar (non-list) fields of `Plan` — all numbers, so `setField` stays simple. */
 export type ScalarField =
-  | 'currentAge'
-  | 'retirementAge'
-  | 'endAge'
-  | 'inflationRate'
-  | 'targetMonthlyIncome'
+  'currentAge' | 'retirementAge' | 'endAge' | 'inflationRate' | 'targetMonthlyIncome'
 
 export type PlanAction =
   | { type: 'setField'; field: ScalarField; value: number }
