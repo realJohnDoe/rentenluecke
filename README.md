@@ -29,12 +29,12 @@ Kranken- und Pflegeversicherung. Keine Anlageberatung.
 ## Entwicklung
 
 ```bash
-npm install
-npm run dev        # Entwicklungsserver
-npm test           # Tests der Finanzmathematik
-npm run typecheck
-npm run format     # Prettier über den Quellcode (`format:check` in CI)
-npm run build      # statischer Build nach dist/
+pnpm install
+pnpm run dev        # Entwicklungsserver
+pnpm test           # Tests der Finanzmathematik
+pnpm run typecheck
+pnpm run format     # Prettier über den Quellcode (`format:check` in CI)
+pnpm run build      # statischer Build nach dist/
 ```
 
 ## Aufbau
@@ -46,7 +46,7 @@ npm run build      # statischer Build nach dist/
 | `src/components/ui/` | Bausteine ohne Fachlogik: `Card`, `Button`, `IconButton`, `Collapsible` |
 | `src/hooks/` | geteilter Zustand: aufgeklappte Einträge, Media Queries, Fokus nach dem Hinzufügen |
 | `src/index.css` | Farb- und Bewegungstoken für hell und dunkel, als Tailwind-Utilities |
-| `.prettierrc.json` | verbindlicher Codestil; `npm run format:check` läuft in CI |
+| `.prettierrc.json` | verbindlicher Codestil; `pnpm run format:check` läuft in CI |
 | `src/i18n/de.ts` | sämtliche deutschen Texte |
 | `plan.md` | Umsetzungsplan für die noch offenen Ausbaustufen |
 
