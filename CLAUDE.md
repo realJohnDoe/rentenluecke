@@ -1,7 +1,5 @@
 # Instructions for Claude
 
-- If a task results in pushed commits and there is no open pull request for
-  that branch yet, open one, even if not explicitly asked to.
 - Use pnpm, never npm or yarn (`packageManager` in `package.json` pins the
   version).
 - Before pushing, run the checks CI runs: `pnpm install --frozen-lockfile`,
@@ -9,5 +7,7 @@
 
 ## Workshop
 
-This repo is dispatched by the workshop. Before creating or labelling an
-issue, or opening a PR, follow the `issue-conventions` skill.
+This repo is dispatched by the workshop. Before creating, labelling or
+ordering an issue, or opening a PR, follow the workshop plugin's
+`conventions` skill. It also covers when to open a PR and adding trace maps
+to it.
