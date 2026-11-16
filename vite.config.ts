@@ -7,7 +7,7 @@ import tailwindcss from '@tailwindcss/vite'
 // Keyed on `mode` rather than `command` so that `vite preview` — which serves the
 // production build — resolves assets the same way the deployed site does.
 export default defineConfig(({ mode }) => ({
-  base: mode === 'production' ? '/rentenluecke/' : '/',
+  base: mode === 'production' ? (process.env.BASE_PATH ?? '/rentenluecke/') : '/',
   plugins: [react(), tailwindcss()],
   test: {
     environment: 'node',
