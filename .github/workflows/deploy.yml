@@ -80,6 +80,8 @@ jobs:
       group: pages
       cancel-in-progress: true
     steps:
+      # github-pages-deploy-action pushes from a git checkout, so it needs one.
+      - uses: actions/checkout@v7
       - uses: actions/download-artifact@v4
         with:
           name: dist
