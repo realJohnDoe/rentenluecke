@@ -56,6 +56,10 @@ deutsch.
 ## Deployment
 
 `.github/workflows/deploy.yml` prüft jeden Push und Pull Request (Format,
-Typecheck, Tests, Build) und veröffentlicht `main` auf GitHub Pages. Einmalig
-nötig:
-Repository → Settings → Pages → Source auf **GitHub Actions** stellen.
+Typecheck, Tests, Build) und veröffentlicht `main` per Push auf den Branch
+`gh-pages`. Einmalig nötig: Repository → Settings → Pages → Source auf
+**Deploy from a branch** → `gh-pages` / `(root)` stellen.
+
+Ein Pull Request mit dem Label `preview` bekommt zusätzlich eine Live-Vorschau
+unter `/rentenluecke/pr-preview/pr-<N>/` (Link als Kommentar im PR); beim
+Schließen wird sie wieder entfernt.
