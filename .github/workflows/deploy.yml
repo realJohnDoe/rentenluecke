@@ -29,7 +29,7 @@ jobs:
       - run: pnpm run typecheck
       - run: pnpm test
       - run: pnpm run build
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: github.ref == 'refs/heads/main'
         with:
           name: dist
@@ -82,7 +82,7 @@ jobs:
     steps:
       # github-pages-deploy-action pushes from a git checkout, so it needs one.
       - uses: actions/checkout@v7
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: dist
           path: dist
