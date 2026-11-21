@@ -7,7 +7,7 @@ import type { Plan } from './types'
  */
 export type PlanIssue = {
   path: string
-  code: 'missing' | 'wrong_type' | 'out_of_range' | 'bad_version'
+  code: 'missing' | 'wrong_type' | 'out_of_range' | 'bad_version' | 'duplicate'
 }
 
 export type ParseResult = { ok: true; plan: Plan } | { ok: false; issues: PlanIssue[] }
@@ -42,16 +42,30 @@ const assetSchemaV1 = z.object({
   colorIndex,
 })
 
-const planSchemaV1 = z.object({
-  version: z.literal(1),
-  currentAge: age,
-  retirementAge: age,
-  endAge: age,
-  inflationRate: z.number().min(-0.05).max(0.15),
-  targetMonthlyIncome: z.number().min(0),
-  pensions: z.array(pensionSchemaV1),
-  assets: z.array(assetSchemaV1),
-})
+const planSchemaV1 = z
+  .object({
+    version: z.literal(1),
+    currentAge: age,
+    retirementAge: age,
+    endAge: age,
+    inflationRate: z.number().min(-0.05).max(0.15),
+    targetMonthlyIncome: z.number().min(0),
+    pensions: z.array(pensionSchemaV1),
+    assets: z.array(assetSchemaV1),
+  })
+  .superRefine((plan, ctx) => {
+    // Every consumer keys entries by id across pensions and assets together, so
+    // a repeated id would overwrite a band and edit or delete both entries.
+    const seen = new Set<string>()
+    const entries = [
+      ...plan.pensions.map((entry, index) => ({ id: entry.id, path: ['pensions', index, 'id'] })),
+      ...plan.assets.map((entry, index) => ({ id: entry.id, path: ['assets', index, 'id'] })),
+    ]
+    for (const { id, path } of entries) {
+      if (seen.has(id)) ctx.addIssue({ code: 'custom', path, message: 'duplicate id' })
+      seen.add(id)
+    }
+  })
 
 /**
  * Parses and validates an imported plan. Never throws — malformed input comes
@@ -124,6 +138,9 @@ function toPlanIssue(issue: z.ZodIssue, input: unknown): PlanIssue {
     case 'too_small':
     case 'too_big':
       return { path, code: 'out_of_range' }
+    // The only custom issue is the duplicate-id check in `planSchemaV1`.
+    case 'custom':
+      return { path, code: 'duplicate' }
     default:
       return { path, code: 'wrong_type' }
   }

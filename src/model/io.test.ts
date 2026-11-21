@@ -35,6 +35,17 @@ describe('serialisePlan / deserialisePlan', () => {
     expect(serialisePlan(defaultPlan)).not.toMatch(/scenario|valueMode/i)
   })
 
+  it('rejects a pension and an asset that share an id, reporting the repeat', () => {
+    const [firstAsset, ...otherAssets] = defaultPlan.assets
+    const clash = {
+      ...defaultPlan,
+      assets: [{ ...firstAsset, id: 'gesetzliche-rente' }, ...otherAssets],
+    }
+    const result = deserialisePlan(stringifyYaml(clash))
+    expect(result.ok).toBe(false)
+    expect(!result.ok && result.issues).toEqual([{ path: 'assets.0.id', code: 'duplicate' }])
+  })
+
   it('fills in colorIndex for a plan exported before that field existed, preserving colours', () => {
     const legacy = {
       ...defaultPlan,
