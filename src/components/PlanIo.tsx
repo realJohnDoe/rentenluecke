@@ -4,7 +4,6 @@ import { Button } from './ui/Button'
 import type { Plan } from '../model/types'
 import type { PlanAction } from '../state/planReducer'
 import type { PlanIssue } from '../model/schema'
-import { downloadPlan, readPlanFile } from '../model/io'
 import { de } from '../i18n/de'
 
 type Props = {
@@ -39,6 +38,8 @@ export function PlanIo({ plan, dispatch }: Props) {
     const file = event.target.files?.[0]
     event.target.value = ''
     if (!file) return
+    // Loaded on demand: the YAML library is only needed for import and export.
+    const { readPlanFile } = await import('../model/io')
     const result = await readPlanFile(file)
     if (result.ok) {
       setImportIssues([])
@@ -59,7 +60,9 @@ export function PlanIo({ plan, dispatch }: Props) {
         <span className="basis-full text-xs font-medium text-ink-secondary sm:basis-auto">
           {de.planIoLabel}
         </span>
-        <Button onClick={() => downloadPlan(plan)}>{de.exportYaml}</Button>
+        <Button onClick={() => void import('../model/io').then((m) => m.downloadPlan(plan))}>
+          {de.exportYaml}
+        </Button>
         <Button onClick={() => fileInputRef.current?.click()}>{de.importPlan}</Button>
         <Button ref={resetButtonRef} onClick={() => setConfirmingReset(true)}>
           {de.resetPlan}
