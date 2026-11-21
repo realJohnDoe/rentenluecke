@@ -3,7 +3,7 @@ import type { Plan } from './types'
 
 /**
  * A validation problem found while parsing an imported plan. English, like the
- * rest of this module — `Toolbar` turns it into German via `de.importError`.
+ * rest of this module — `PlanIo` turns it into German via `de.importError`.
  */
 export type PlanIssue = {
   path: string
@@ -12,8 +12,7 @@ export type PlanIssue = {
 
 export type ParseResult = { ok: true; plan: Plan } | { ok: false; issues: PlanIssue[] }
 
-// Bounds mirror the `min`/`max` already enforced on the number inputs (see
-// plan.md, PR 2 notes): age 0-100, inflation/returns -10 % to 15 %, except
+// Bounds mirror the `min`/`max` already enforced on the number inputs: age 0-100, inflation/returns -10 % to 15 %, except
 // inflation which the UI additionally floors at -5 %.
 const age = z.number().min(0).max(100)
 const rate = z.number().min(-0.1).max(0.15)

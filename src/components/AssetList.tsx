@@ -164,7 +164,8 @@ function AssetCard({
 /** Compact, one-line description of an asset's settings for the collapsed row. */
 function assetSummary(asset: Asset): string {
   const parts = [formatEuro(asset.currentValue)]
-  if (asset.monthlyContribution !== 0) parts.push(`+${formatEuro(asset.monthlyContribution)}/Monat`)
+  if (asset.monthlyContribution !== 0)
+    parts.push(`+${formatEuro(asset.monthlyContribution)}${de.perMonthSuffix}`)
   parts.push(
     `${formatPercent(asset.annualReturn)} / ${formatPercent(asset.annualReturnInRetirement)}`,
   )

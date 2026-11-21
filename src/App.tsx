@@ -31,8 +31,8 @@ function loadStoredPlan(): Plan {
 
 export function App() {
   const [plan, dispatch] = useReducer(planReducer, undefined, loadStoredPlan)
-  // Both are view options, never part of the plan — see the "What is a Plan"
-  // convention.
+  // Both are view options, never part of the plan — see "What is a Plan" in
+  // CLAUDE.md.
   const [scenario, setScenario] = useState<Scenario>('continue')
   const [valueMode, setValueMode] = useState<ValueMode>('nominal')
 

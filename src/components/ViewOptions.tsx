@@ -10,7 +10,7 @@ type Props = {
 
 /**
  * Two segmented controls for the view options (`useState` in `App.tsx`, never
- * in the plan — see the "What is a Plan" convention). They only affect the
+ * in the plan — see "What is a Plan" in CLAUDE.md). They only affect the
  * projection shown in `Summary` and `Charts`, never the input cards, so they
  * sit directly above those two rather than at the top of the page.
  *
@@ -21,7 +21,7 @@ export function ViewOptions({ scenario, onScenarioChange, valueMode, onValueMode
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-4">
       <SegmentedControl
-        label={de.scenarioToolbarLabel}
+        label={de.scenarioLabel}
         value={scenario}
         onChange={onScenarioChange}
         options={[
@@ -30,7 +30,7 @@ export function ViewOptions({ scenario, onScenarioChange, valueMode, onValueMode
         ]}
       />
       <SegmentedControl
-        label={de.valueModeToolbarLabel}
+        label={de.valueModeLabel}
         value={valueMode}
         onChange={onValueModeChange}
         options={[
