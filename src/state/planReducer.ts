@@ -18,10 +18,12 @@ export type PlanAction =
   | { type: 'replacePlan'; plan: Plan }
   | { type: 'resetPlan' }
 
-/** Next free colour slot, across pensions and assets together — see `Pension.colorIndex`. */
+/** Lowest colour slot not in use, across pensions and assets together — see `Pension.colorIndex`. */
 function nextColorIndex(plan: Plan): number {
-  const used = [...plan.pensions, ...plan.assets].map((entry) => entry.colorIndex)
-  return used.length === 0 ? 0 : Math.max(...used) + 1
+  const used = new Set([...plan.pensions, ...plan.assets].map((entry) => entry.colorIndex))
+  let slot = 0
+  while (used.has(slot)) slot++
+  return slot
 }
 
 function newPension(plan: Plan): Pension {
