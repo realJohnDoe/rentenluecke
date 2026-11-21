@@ -68,10 +68,22 @@ describe('planReducer / pensions', () => {
     expect(new Set(ids).size).toBe(ids.length)
   })
 
-  it('assigns a colour slot past every slot already in use, across pensions and assets', () => {
+  it('assigns the lowest colour slot not in use, across pensions and assets', () => {
     // basePlan already has colorIndex 0 (pension) and 1 (asset) in use.
     const next = planReducer(basePlan, { type: 'addPension' })
     expect(next.pensions[1]?.colorIndex).toBe(2)
+  })
+
+  it('reuses a freed colour slot instead of growing past the highest one', () => {
+    // Five pensions in slots 0-4 would be needed; drop a middle one, add another.
+    let plan = basePlan
+    for (let i = 0; i < 4; i++) plan = planReducer(plan, { type: 'addPension' })
+    const slots = plan.pensions.map((pension) => pension.colorIndex)
+    expect(slots).toEqual([0, 2, 3, 4, 5])
+    const removedId = plan.pensions[2]?.id ?? ''
+    plan = planReducer(plan, { type: 'removePension', id: removedId })
+    const next = planReducer(plan, { type: 'addPension' })
+    expect(next.pensions.at(-1)?.colorIndex).toBe(3)
   })
 
   it('reorders pensions to match the given id order', () => {
