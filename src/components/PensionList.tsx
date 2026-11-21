@@ -171,7 +171,8 @@ function pensionSummary(pension: Pension, retirementAge: number): string {
       ? formatEuro(pension.monthlyIfContinued)
       : `${formatEuro(pension.monthlyIfStopped)} / ${formatEuro(pension.monthlyIfContinued)}`
   const startAge = pension.startAge ?? retirementAge
-  const parts = [amounts, `ab ${startAge}`]
-  if (pension.annualIncrease !== 0) parts.push(`${formatPercent(pension.annualIncrease)} p.a.`)
+  const parts = [amounts, de.startsAt(startAge)]
+  if (pension.annualIncrease !== 0)
+    parts.push(`${formatPercent(pension.annualIncrease)} ${de.perYearSuffix}`)
   return parts.join(' · ')
 }

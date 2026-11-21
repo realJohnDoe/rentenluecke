@@ -48,7 +48,6 @@ pnpm run build      # statischer Build nach dist/
 | `src/index.css` | Farb- und Bewegungstoken für hell und dunkel, als Tailwind-Utilities |
 | `.prettierrc.json` | verbindlicher Codestil; `pnpm run format:check` läuft in CI |
 | `src/i18n/de.ts` | sämtliche deutschen Texte |
-| `plan.md` | Umsetzungsplan für die noch offenen Ausbaustufen |
 
 Code, Bezeichner und das JSON/YAML-Format sind englisch; nur die Oberfläche ist
 deutsch.

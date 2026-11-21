@@ -93,10 +93,13 @@ export const de = {
   valueModeReal: 'Heutige Kaufkraft',
   valueModeNominal: 'Nominal',
   years: 'Jahre',
+  startsAt: (age: number) => `ab ${age}`,
+  perYearSuffix: 'p.a.',
+  perMonthSuffix: '/Monat',
 
-  // Toolbar
-  scenarioToolbarLabel: 'Szenario',
-  valueModeToolbarLabel: 'Betrachtung',
+  // View options
+  scenarioLabel: 'Szenario',
+  valueModeLabel: 'Betrachtung',
   /** Short label for the inactive scenario, used in the ghost legend and Summary. */
   scenarioName: (scenario: Scenario) => (scenario === 'stop' ? 'Beitragsfrei' : 'Weiterzahlung'),
   kaufkrafterhalt: 'Kaufkrafterhalt',
