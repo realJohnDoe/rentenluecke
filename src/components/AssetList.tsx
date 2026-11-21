@@ -145,7 +145,6 @@ function AssetCard({
         onChange={(value) => update({ annualReturn: value / 100 })}
         min={-10}
         max={15}
-        step={0.1}
         suffix="%"
         hint={de.annualReturnHint}
       />
@@ -155,7 +154,6 @@ function AssetCard({
         onChange={(value) => update({ annualReturnInRetirement: value / 100 })}
         min={-10}
         max={15}
-        step={0.1}
         suffix="%"
         hint={de.annualReturnInRetirementHint}
       />

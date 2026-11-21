@@ -7,6 +7,7 @@ type Props = {
   onChange: (value: number) => void
   min?: number
   max?: number
+  /** Increment of the slider only; the text input does not enforce it. */
   step?: number
   /** Unit shown inside the input's trailing edge, e.g. "€", "%", "Jahre". */
   suffix?: string

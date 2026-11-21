@@ -148,7 +148,6 @@ function PensionCard({
         onChange={(value) => update({ annualIncrease: value / 100 })}
         min={-10}
         max={15}
-        step={0.1}
         suffix="%"
         hint={de.annualIncreaseHint}
       />
@@ -158,7 +157,6 @@ function PensionCard({
         onChange={(value) => update({ startAge: value })}
         min={0}
         max={100}
-        step={1}
         suffix={de.years}
         hint={de.pensionStartAgeHint}
       />
