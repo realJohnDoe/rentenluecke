@@ -71,7 +71,6 @@ export function PlanForm({ plan, dispatch }: Props) {
           }
           min={-5}
           max={15}
-          step={0.1}
           suffix="%"
           hint={de.inflationRateHint}
         />

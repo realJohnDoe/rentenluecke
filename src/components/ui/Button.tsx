@@ -5,8 +5,6 @@ type Props = {
   /** Only needed where focus has to be moved back to the button by hand. */
   ref?: Ref<HTMLButtonElement>
   children: ReactNode
-  /** `full` stretches to the container — used where a row of buttons stacks on mobile. */
-  width?: 'auto' | 'full'
   /** `critical` marks the one button that confirms a destructive action. */
   tone?: 'default' | 'critical'
 }
@@ -19,7 +17,7 @@ type Props = {
  * button that actually discards the plan, so the confirmation step does not
  * look identical to the step that asked for it.
  */
-export function Button({ onClick, children, width = 'auto', tone = 'default', ref }: Props) {
+export function Button({ onClick, children, tone = 'default', ref }: Props) {
   return (
     <button
       ref={ref}
@@ -32,8 +30,7 @@ export function Button({ onClick, children, width = 'auto', tone = 'default', re
           tone === 'critical'
             ? 'border-critical text-critical'
             : 'border-hairline text-ink-secondary hover:text-ink'
-        }
-        ${width === 'full' ? 'w-full' : ''}`}
+        }`}
     >
       {children}
     </button>
