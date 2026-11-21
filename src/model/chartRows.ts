@@ -173,3 +173,8 @@ export function buildSeries(plan: Plan): { assets: ChartSeries[]; income: Income
     income: { pensions, withdrawals: [...withdrawals, ...otherIncome] },
   }
 }
+
+/** The income panel's stack order: pensions below withdrawals, each in sidebar order. */
+export function incomeStackOrderOf(income: IncomeSeries): ChartSeries[] {
+  return [...income.pensions, ...income.withdrawals]
+}
