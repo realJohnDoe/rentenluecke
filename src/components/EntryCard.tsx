@@ -1,11 +1,15 @@
 import { useId } from 'react'
-import type { CSSProperties, ReactNode, Ref } from 'react'
+import type { ReactNode } from 'react'
+import { useSortable } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import { IconButton } from './ui/IconButton'
 import { Collapsible } from './ui/Collapsible'
 import { Switch } from './ui/Switch'
 import { de } from '../i18n/de'
 
 type Props = {
+  /** Entry id, the key the list's drag-and-drop context sorts by. */
+  id: string
   color: string
   enabled: boolean
   onEnabledChange: (enabled: boolean) => void
@@ -17,17 +21,6 @@ type Props = {
   onToggle: () => void
   /** One-line description of the fields hidden in `children`, shown while collapsed. */
   summary: string
-  /**
-   * The drag handle button, already wired to whatever drag-and-drop library
-   * the list uses (see `PensionCard`/`AssetCard`) — a fully-built element
-   * rather than a prop bag, so this component stays library-agnostic.
-   */
-  dragHandle: ReactNode
-  /** Ref for the `<li>` itself, so the drag library can measure and move it. */
-  itemRef: Ref<HTMLLIElement>
-  /** Live transform/transition while a drag is in progress. */
-  itemStyle?: CSSProperties
-  isDragging?: boolean
   children: ReactNode
 }
 
@@ -48,6 +41,7 @@ type Props = {
  * which entries the projection is actually counting.
  */
 export function EntryCard({
+  id,
   color,
   enabled,
   onEnabledChange,
@@ -58,13 +52,19 @@ export function EntryCard({
   expanded,
   onToggle,
   summary,
-  dragHandle,
-  itemRef,
-  itemStyle,
-  isDragging = false,
   children,
 }: Props) {
   const detailsId = useId()
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    setActivatorNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id })
+  const handleLabel = de.reorderEntry(name || namePlaceholder)
 
   return (
     /*
@@ -79,13 +79,25 @@ export function EntryCard({
      * whatever sits behind it through its gaps.
      */
     <li
-      ref={itemRef}
-      style={itemStyle}
+      ref={setNodeRef}
+      style={{ transform: CSS.Transform.toString(transform), transition }}
       className={`@container rounded-lg border border-hairline bg-surface
         ${isDragging ? 'relative z-10 shadow-lg' : ''}`}
     >
       <div className="flex items-center gap-2 p-2 pl-3">
-        {dragHandle}
+        <button
+          type="button"
+          ref={setActivatorNodeRef}
+          aria-label={handleLabel}
+          title={handleLabel}
+          className="inline-flex size-10 shrink-0 touch-none items-center justify-center rounded-lg
+            text-ink-muted transition duration-150 hover:bg-raised hover:text-ink active:scale-95"
+          style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
+          {...attributes}
+          {...listeners}
+        >
+          <GripIcon />
+        </button>
         <Switch
           checked={enabled}
           onChange={onEnabledChange}
@@ -146,8 +158,8 @@ export function EntryCard({
   )
 }
 
-/** Six-dot grip, the drag handle's icon — shared by `PensionCard` and `AssetCard`. */
-export function GripIcon() {
+/** Six-dot grip, the drag handle's icon. */
+function GripIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
       <circle cx="5" cy="3" r="1.3" fill="currentColor" />
