@@ -1,4 +1,4 @@
-# Refuse package versions published less than 24 h ago (the pnpm 11 default,
+# Refuse package versions published less than 24 h ago (the pnpm default,
 # stated here so Dependabot's cooldown visibly matches it).
 minimumReleaseAge: 1440
 
