@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { assetColor, buildSeries, pensionColor } from './chartRows'
+import { assetColor, buildSeries, incomeStackOrderOf, pensionColor } from './chartRows'
 import type { Asset, Pension, Plan } from './types'
 
 const pension = (overrides: Partial<Pension>): Pension => ({
@@ -106,5 +106,22 @@ describe('pensionColor / assetColor', () => {
     expect(pensionColor(reordered, 'p1')).toBe(pensionColor(plan, 'p1'))
     expect(pensionColor(reordered, 'p2')).toBe(pensionColor(plan, 'p2'))
     expect(assetColor(reordered, 'a1')).toBe(assetColor(plan, 'a1'))
+  })
+})
+
+describe('incomeStackOrderOf', () => {
+  it('stacks pensions below withdrawals, each in sidebar order', () => {
+    const plan: Plan = {
+      ...basePlan,
+      pensions: [pension({ id: 'p1' }), pension({ id: 'p2' })],
+      assets: [asset({ id: 'a1' }), asset({ id: 'a2' })],
+    }
+    const { income } = buildSeries(plan)
+    expect(incomeStackOrderOf(income).map((s) => s.key)).toEqual([
+      'pension:p1',
+      'pension:p2',
+      'withdrawal:a1',
+      'withdrawal:a2',
+    ])
   })
 })
