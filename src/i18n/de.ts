@@ -123,6 +123,8 @@ export const de = {
         return `Wert außerhalb des gültigen Bereichs: ${field}`
       case 'bad_version':
         return 'Diese Datei stammt aus einer nicht unterstützten Version.'
+      case 'duplicate':
+        return `Doppelte ID bei: ${field}`
     }
   },
 
